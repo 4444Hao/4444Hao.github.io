@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "生成博客",
+      "type": "process",
+      "command": "python",
+      "args": ["build.py"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "预览博客（8001）",
+      "type": "process",
+      "command": "python",
+      "args": ["-m", "http.server", "8001", "--bind", "127.0.0.1", "--directory", "docs"],
+      "options": { "cwd": "${workspaceFolder}" },
+      "dependsOn": "生成博客",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "dedicated", "focus": false }
+    }
+  ]
+}

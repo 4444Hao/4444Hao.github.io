@@ -1,0 +1,234 @@
+{
+  "nodes": [
+    {
+      "tag": "意义",
+      "count": 18
+    },
+    {
+      "tag": "选择",
+      "count": 18
+    },
+    {
+      "tag": "情绪",
+      "count": 16
+    },
+    {
+      "tag": "行动",
+      "count": 15
+    },
+    {
+      "tag": "回忆",
+      "count": 13
+    },
+    {
+      "tag": "日常",
+      "count": 13
+    },
+    {
+      "tag": "学习",
+      "count": 11
+    },
+    {
+      "tag": "阅读",
+      "count": 11
+    },
+    {
+      "tag": "关系",
+      "count": 8
+    },
+    {
+      "tag": "独处",
+      "count": 4
+    },
+    {
+      "tag": "自然",
+      "count": 4
+    },
+    {
+      "tag": "动物",
+      "count": 2
+    }
+  ],
+  "links": [
+    {
+      "source": "关系",
+      "target": "回忆",
+      "weight": 1
+    },
+    {
+      "source": "关系",
+      "target": "学习",
+      "weight": 1
+    },
+    {
+      "source": "关系",
+      "target": "情绪",
+      "weight": 3
+    },
+    {
+      "source": "关系",
+      "target": "意义",
+      "weight": 2
+    },
+    {
+      "source": "关系",
+      "target": "自然",
+      "weight": 1
+    },
+    {
+      "source": "关系",
+      "target": "选择",
+      "weight": 3
+    },
+    {
+      "source": "动物",
+      "target": "日常",
+      "weight": 2
+    },
+    {
+      "source": "回忆",
+      "target": "学习",
+      "weight": 2
+    },
+    {
+      "source": "回忆",
+      "target": "情绪",
+      "weight": 5
+    },
+    {
+      "source": "回忆",
+      "target": "日常",
+      "weight": 3
+    },
+    {
+      "source": "回忆",
+      "target": "自然",
+      "weight": 1
+    },
+    {
+      "source": "回忆",
+      "target": "选择",
+      "weight": 4
+    },
+    {
+      "source": "回忆",
+      "target": "阅读",
+      "weight": 2
+    },
+    {
+      "source": "学习",
+      "target": "情绪",
+      "weight": 2
+    },
+    {
+      "source": "学习",
+      "target": "意义",
+      "weight": 1
+    },
+    {
+      "source": "学习",
+      "target": "行动",
+      "weight": 6
+    },
+    {
+      "source": "学习",
+      "target": "选择",
+      "weight": 2
+    },
+    {
+      "source": "学习",
+      "target": "阅读",
+      "weight": 2
+    },
+    {
+      "source": "情绪",
+      "target": "意义",
+      "weight": 3
+    },
+    {
+      "source": "情绪",
+      "target": "日常",
+      "weight": 2
+    },
+    {
+      "source": "情绪",
+      "target": "独处",
+      "weight": 2
+    },
+    {
+      "source": "情绪",
+      "target": "自然",
+      "weight": 1
+    },
+    {
+      "source": "情绪",
+      "target": "行动",
+      "weight": 3
+    },
+    {
+      "source": "情绪",
+      "target": "选择",
+      "weight": 4
+    },
+    {
+      "source": "情绪",
+      "target": "阅读",
+      "weight": 1
+    },
+    {
+      "source": "意义",
+      "target": "日常",
+      "weight": 1
+    },
+    {
+      "source": "意义",
+      "target": "自然",
+      "weight": 1
+    },
+    {
+      "source": "意义",
+      "target": "行动",
+      "weight": 3
+    },
+    {
+      "source": "意义",
+      "target": "选择",
+      "weight": 8
+    },
+    {
+      "source": "意义",
+      "target": "阅读",
+      "weight": 5
+    },
+    {
+      "source": "日常",
+      "target": "独处",
+      "weight": 1
+    },
+    {
+      "source": "日常",
+      "target": "行动",
+      "weight": 5
+    },
+    {
+      "source": "日常",
+      "target": "阅读",
+      "weight": 1
+    },
+    {
+      "source": "独处",
+      "target": "自然",
+      "weight": 2
+    },
+    {
+      "source": "行动",
+      "target": "选择",
+      "weight": 3
+    },
+    {
+      "source": "选择",
+      "target": "阅读",
+      "weight": 2
+    }
+  ]
+}
