@@ -1,6 +1,6 @@
 # 风过枝间
 
-一个米白、绿树与安静文字的个人静态博客。顶部导航为「主页／随笔／短记／摘录／专题整理」。主页以标签关系图谱浏览全部内容，四个栏目直接展示对应笔记。当前 59 篇本地待审阅文章、2 篇草稿。尚未提交、推送或部署。
+一个米白、绿树与安静文字的个人静态博客。顶部导航为「主页／随笔／短记／摘录／专题整理」。主页以标签关系图谱浏览全部内容，四个栏目直接展示对应笔记。当前 59 篇展示文章、2 篇草稿。网站已使用 GitHub Pages 发布。
 
 ## 在 VS Code 中预览
 
@@ -49,7 +49,7 @@ sourceNote: 个人记录。
 - 摘录填写 provenance 与 sourceNote；AI 协助整理单独标注。来源说明不代表事实已核实。
 - order 可选，用整数指定无日期文章的顺序；不填则放在既有无日期文章后面，按文件名排序。已知日期文章优先，按日期倒序。
 
-content/index.json 是构建生成的审阅索引，请不要在里面修改文章属性。原始 Obsidian 文件不自动同步、不被修改。
+content/index.json 是构建生成的审阅索引，请不要在里面修改文章属性。原始「随笔」「摘录」素材不自动同步；日常在 Obsidian 的「博客/content」维护网站副本。
 
 ## 图谱如何生长
 
@@ -96,4 +96,4 @@ content/index.json 是构建生成的审阅索引，请不要在里面修改文�
 python -m unittest discover -s tests -v
 ```
 
-先在本地审阅内容。确认公开范围后，再使用 VS Code 提交和推送源文件与 docs/。GitHub Pages 使用 main 分支的 /docs；Cloudflare Pages 可以连接同一仓库发布相同静态目录。正式网址变更时更新 site.json 后重新构建。本项目面向域名根路径。
+自动构建配置见 .github/workflows/pages.yml。启用前需把 GitHub Pages Source 改成 GitHub Actions，并提交、推送此配置。启用后，main 的每次推送会验证文章、运行 build.py 并部署 docs 产物；不需要手动提交生成的 HTML。日常增删改笔记与模板操作见 [Obsidian 维护说明](OBSIDIAN_WORKFLOW.md)。Cloudflare Pages 后续可使用同一源码，以 python build.py 构建、docs 作为输出目录。正式网址变更时更新 site.json。本项目面向域名根路径。
