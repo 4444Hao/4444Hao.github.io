@@ -10,7 +10,7 @@ try:
     import yaml
 except ModuleNotFoundError:
     raise SystemExit('缺少 PyYAML，请先运行：python -m pip install -r requirements.txt')
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from html.parser import HTMLParser
 import html
 import json
@@ -58,6 +58,8 @@ MANIFEST, CONTENT = load_notes()
 CATEGORIES = SITE["categories"]
 ORIGIN = SITE["url"].rstrip("/")
 PAGE_SIZE = 10
+RECENT_SIZE = 6
+ALL_BASE = "/all/"
 SECTIONS = {'随笔':'/essays/', '短记':'/notes/', '摘录':'/excerpts/', '专题整理':'/collections/'}
 
 
@@ -252,13 +254,40 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
 
 
 def tag_links(note: dict) -> str:
-    return '<div class="entry-tags">' + ''.join(f'<a href="/?tag={quote(tag)}#records">{esc(tag)}</a>' for tag in note['tags']) + '</div>'
+    return '<div class="entry-tags">' + ''.join(f'<a href="/all/?tag={quote(tag)}#records">{esc(tag)}</a>' for tag in note['tags']) + '</div>'
+
+
+def updated_time(value: str) -> datetime:
+    value = str(value)
+    parsed = datetime.fromisoformat(value)
+    return parsed.replace(tzinfo=timezone(timedelta(hours=8))) if parsed.tzinfo is None else parsed
+
+
+def updated_label(value: str) -> str:
+    stamp = updated_time(value).astimezone(timezone(timedelta(hours=8)))
+    return stamp.strftime('%Y-%m-%d %H:%M') if len(str(value)) > 10 else stamp.strftime('%Y-%m-%d')
+
+
+def note_time(note: dict) -> str:
+    updated = f'<span>更新于 <time datetime="{esc(note["updatedAt"])}">{esc(updated_label(note["updatedAt"]))}</time></span>'
+    if not note.get('date'):
+        return f'<div class="note-time">{updated}</div>'
+    written = f'<span>写于 <time datetime="{esc(note["date"])}">{esc(note["date"])}</time></span>'
+    return f'<div class="note-time">{written}{updated if note["date"] != note["updatedAt"] else ""}</div>'
+
+
+def recent_listing(notes: list[dict]) -> str:
+    return f'''<section id="records" class="records recent-records" data-kind="recent" aria-labelledby="records-title">
+    <header class="section-heading"><div><h2 id="records-title">最近笔记</h2><p id="list-summary">按最近内容更新时间排列，包含修订过的笔记。</p></div><a class="more-notes" href="/all/#records">查看全部 →</a></header>
+    <ul class="essay-list">{''.join(entry(n) for n in notes[:RECENT_SIZE])}</ul>
+{'' if notes else '<p class="empty-results">还没有公开笔记。</p>'}
+    </section>'''
 
 
 def entry(note: dict) -> str:
-    return f"""<li class="essay-entry" data-category="{esc(note['category'])}" data-tags="{esc(json.dumps(note['tags'], ensure_ascii=False))}">
+    return f"""<li class="essay-entry" data-slug="{esc(note['slug'])}" data-updated="{esc(note['updatedAt'])}" data-category="{esc(note['category'])}" data-tags="{esc(json.dumps(note['tags'], ensure_ascii=False))}">
     <div class="entry-top"><a class="essay-link" href="/essays/{esc(note['slug'])}/"><h3>{esc(note['title'])}</h3></a><span class="entry-category">{esc(note['category'])}</span></div>
-    <p class="entry-excerpt">{esc(note['excerpt'])}</p>{tag_links(note)}</li>"""
+    <p class="entry-excerpt">{esc(note['excerpt'])}</p>{tag_links(note)}{note_time(note)}</li>"""
 
 
 def listing_path(base: str, number: int) -> str:
@@ -282,13 +311,13 @@ def pager(total: int, number: int, base: str) -> str:
     return f'<nav id="pagination" class="pagination" aria-label="笔记分页"{(" hidden" if pages==1 else "")}>'+previous+f'<div class="page-numbers">{"".join(numbers)}</div><span class="page-indicator">第 {number} / {pages} 页</span>'+following+'</nav>'
 
 
-def listing(notes: list[dict], *, page_number=1, title='全部笔记', base='/', home=False) -> str:
+def listing(notes: list[dict], *, page_number=1, title='全部笔记', base='/', home=False, kind='section') -> str:
     total=len(notes); pages=max(1,math.ceil(total/PAGE_SIZE))
     portion=notes[(page_number-1)*PAGE_SIZE:page_number*PAGE_SIZE]
     heading = 'h2' if home else 'h1'
     extra = '<a class="back-to-graph" href="#topics-title">回到图谱 ↑</a>' if home else ''
-    return f"""<section id="records" class="records{' section-listing' if not home else ''}" aria-labelledby="records-title" data-kind="{'home' if home else 'section'}" data-base="{base}" data-page="{page_number}" data-page-size="{PAGE_SIZE}">
-    <header class="{'section-heading' if home else 'listing-heading'}"><div><{heading} id="records-title" tabindex="-1">{esc(title)}</{heading}><p id="list-summary" role="status" aria-live="polite">共 {total} 篇 · 第 {page_number} / {pages} 页</p></div>{extra}</header>
+    return f"""<section id="records" class="records{' section-listing' if not home else ''}" aria-labelledby="records-title" data-kind="{kind}" data-base="{base}" data-page="{page_number}" data-page-size="{PAGE_SIZE}">
+    <header class="{'section-heading' if home else 'listing-heading'}"><div><{heading} id="records-title" tabindex="-1">{esc(title)}</{heading}><p id="list-summary" role="status" aria-live="polite">按最近更新排列 · 共 {total} 篇 · 第 {page_number} / {pages} 页</p></div>{extra}</header>
     <ul class="essay-list">{''.join(entry(n) for n in portion)}</ul>
     <div id="empty-results" class="empty-results" hidden><p>这里暂时没有符合条件的笔记。</p><button type="button" id="empty-clear">查看全部笔记</button></div>{pager(total,page_number,base)}
     <template id="article-catalog">{''.join(entry(n) for n in notes)}</template></section>"""
@@ -320,9 +349,9 @@ def build() -> None:
         if not re.fullmatch(r'[a-z0-9-]+', n['slug']) or n['category'] not in CATEGORIES:
             raise ValueError(f'Invalid manifest entry: {n}')
         if not isinstance(n['draft'], bool): raise ValueError('draft must be boolean')
-        date.fromisoformat(n['updatedAt'])
+        updated_time(n['updatedAt'])
         if n.get('date'): date.fromisoformat(n['date'])
-    notes = sorted([n for n in MANIFEST if not n['draft']], key=lambda n: n.get('date', ''), reverse=True)
+    notes = sorted([n for n in MANIFEST if not n['draft']], key=lambda n: updated_time(n['updatedAt']), reverse=True)
     # Validate and render before replacing output, so a bad note preserves the last preview.
     rendered = {}
     for n in notes:
@@ -330,7 +359,7 @@ def build() -> None:
         if re.search(r'\[\[', content): raise ValueError(f'Resolve Obsidian links: {n["slug"]}')
         rendered[n['slug']] = markdown(content)
     total = sum(word_count(body) for body in rendered.values())
-    updated = max(n['updatedAt'] for n in notes) if notes else '暂无'
+    updated = max((n['updatedAt'] for n in notes), key=updated_time) if notes else '暂无'
     if OUT.exists():
         if OUT.is_symlink() or OUT.resolve().parent != ROOT.resolve():
             raise ValueError('Refusing to replace output outside project')
@@ -352,19 +381,25 @@ def build() -> None:
         label_y = -4 - 8*(len(chunks)-1)
         node_markup.append(f'<g class="graph-node" data-tag="{esc(tag)}" data-count="{counts[tag]}" data-radius="{radius:.2f}" data-node="{i}" role="button" tabindex="0" aria-pressed="false" aria-label="{esc(tag)}，{counts[tag]} 篇文章"><title>{esc(tag)} · {counts[tag]} 篇</title><circle class="node-disc" r="{radius:.2f}"/><text class="node-label" y="{label_y}">{label}</text><text class="node-count" y="{12+8*(len(chunks)-1)}">{counts[tag]} 篇</text></g>')
     lines = ''.join(f'<line data-source="{ids[a]}" data-target="{ids[b]}" data-weight="{weight}" stroke-width="{min(2.2,.45+math.sqrt(weight)*.24):.2f}"/>' for (a,b),weight in sorted(cooccurrence.items()))
-    tag_list = ''.join(f'<a class="tag-list-link" data-tag="{esc(tag)}" href="/?tag={quote(tag,safe="")}#records" role="button" aria-pressed="false">{esc(tag)}<span>{counts[tag]}</span></a>' for tag in tag_names)
+    tag_list = ''.join(f'<a class="tag-list-link" data-tag="{esc(tag)}" href="/all/?tag={quote(tag,safe="")}#records" role="button" aria-pressed="false">{esc(tag)}<span>{counts[tag]}</span></a>' for tag in tag_names)
     toolbar='<div class="nav-filters" id="home-filter-status" hidden><div class="filter-status"><span id="filter-description"></span><button type="button" id="remove-tag" aria-label="移除选中的标签" hidden>×</button><span id="result-count"></span><button type="button" id="clear-filters">清除筛选</button></div></div>'
     illustration = '<figure class="landscape"><img src="/assets/wind-in-trees.webp" width="2125" height="740" alt="风中的绿树与安静的草地" decoding="async"></figure>' if (ROOT/'assets/wind-in-trees.webp').exists() else ''
-    body=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['title'])}</h1><p class="intro-line">{esc(SITE['description'])}</p></div><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated)}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></section>
+    body=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['title'])}</h1><p class="intro-line">{esc(SITE['description'])}</p></div><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated_label(updated))}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></section>
     {illustration}<section class="topics" aria-labelledby="topics-title"><div class="section-heading"><div><p class="eyebrow">话题之间</p><h2 id="topics-title">沿着联系，读下去</h2></div><div class="graph-controls" hidden><button type="button" id="view-graph" aria-pressed="true">图谱</button><button type="button" id="view-list" aria-pressed="false">标签列表</button><button type="button" id="motion-toggle" aria-pressed="false">暂停动态</button></div></div><p class="graph-hint">圆越大，相关记录越多；连线表示共同出现。点击筛选，拖动探索。</p>
     <div id="graph-panel" hidden><svg id="tag-graph" viewBox="0 0 980 420" role="group" aria-label="标签关系图谱" aria-describedby="graph-help"><desc id="graph-help">标签的大小按公开文章篇数计算，连线按标签共同出现的文章篇数计算。使用 Tab 选择标签，Enter 或空格筛选；也可切换标签列表。</desc><defs><radialGradient id="node-fill" cx="32%" cy="25%" r="80%"><stop offset="0%" stop-color="#fafbf3"/><stop offset="100%" stop-color="#dce6d4"/></radialGradient></defs><g class="graph-edges">{lines}</g><g class="graph-nodes">{''.join(node_markup)}</g></svg></div>
-    <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">每页显示 10 篇，可通过页码浏览全部笔记；启用 JavaScript 后可使用图谱与标签筛选。</p></noscript></section>
+    <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">最近笔记显示 6 篇；点击查看全部浏览完整列表。标签筛选需要启用 JavaScript。</p></noscript></section>
     """
-    listing_paths=[]
+    listing_paths=['/']
+    write('index.html', page('',body.rstrip()+"\n"+recent_listing(notes),current='home',path='/'))
     for page_number in range(1,max(1,math.ceil(len(notes)/PAGE_SIZE))+1):
-        path=listing_path('/',page_number); listing_paths.append(path)
-        home_body=body+listing(notes,page_number=page_number,home=True)
-        write(path.lstrip('/')+'index.html',page('' if page_number==1 else f'全部笔记 · 第 {page_number} 页',home_body,current='home',path=path,toolbar=toolbar))
+        path=listing_path(ALL_BASE,page_number); listing_paths.append(path)
+        all_body=listing(notes,page_number=page_number,base=ALL_BASE,kind='all')
+        title='全部笔记' if page_number==1 else f'全部笔记 · 第 {page_number} 页'
+        write(path.lstrip('/')+'index.html',page(title,all_body,current='home',path=path,toolbar=toolbar))
+        if page_number > 1:
+            # Keep previously shared list-page addresses useful without changing article URLs.
+            target=path+'#records'
+            write(f'page/{page_number}/index.html',f'<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url={target}"><link rel="canonical" href="{ORIGIN+path}"><title>全部笔记</title></head><body><a href="{target}">继续浏览全部笔记</a></body></html>')
     write('assets/graph-data.json',json.dumps({'nodes':[{'tag':t,'count':counts[t]} for t in tag_names], 'links':[{'source':a,'target':b,'weight':w} for (a,b),w in sorted(cooccurrence.items())]},ensure_ascii=False,indent=2)+'\n')
     (ROOT/'content/index.json').write_text(json.dumps(MANIFEST,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     for category,base in SECTIONS.items():
@@ -375,7 +410,7 @@ def build() -> None:
             title=category if page_number==1 else f'{category} · 第 {page_number} 页'
             write(path.lstrip('/')+'index.html',page(title,body,current=category,path=path))
     for i,n in enumerate(notes):
-        stamp = f'<time datetime="{esc(n["date"])}">{esc(n["date"])}</time>' if n.get('date') else ''
+        stamp = note_time(n)
         neighbors = []
         for offset,label in ((-1,'上一篇'),(1,'下一篇')):
             if 0 <= i+offset < len(notes):
@@ -389,7 +424,7 @@ def build() -> None:
             toc = f'<aside class="article-toc"><p>文章目录</p><nav aria-label="文章目录">{toc_links}</nav></aside>'
         section_path=SECTIONS.get(n['category'], '/'); section_label=n['category'] if n['category'] in SECTIONS else '主页'
         category_href=SECTIONS.get(n['category'], '/?category='+quote(n['category'])+'#records')
-        body=f"""<div class="reading-layout{' with-toc' if toc else ''}"><article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header><div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(n['updatedAt'])}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>{toc}</div>"""
+        body=f"""<div class="reading-layout{' with-toc' if toc else ''}"><article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header><div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(updated_label(n['updatedAt']))}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>{toc}</div>"""
         write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',description=n['excerpt'],article=True))
     about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好，我是 Hao。</h1></header><div class="prose"><p>我是一名大学生，习惯用 Obsidian 记录眼所见、心所想。</p><p>我喜欢绿色、树木、风与小动物，也喜欢绘画、硬笔书法，以及独处时自己的节奏。</p><p>这里先放随笔、短记、摘录与专题整理。从文字、作品和见闻中，慢慢留下一些关于自己的线索。</p><p>摘录与 AI 协助整理会单独标明；收藏一段文字，也可能只是想停下来想一想。</p><p>写下来，再慢慢回头看。</p></div></article>'
     write('about/index.html',page('关于',about,current='about',path='/about/'))

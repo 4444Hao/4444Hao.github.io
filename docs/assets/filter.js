@@ -2,9 +2,29 @@
 (() => {
   'use strict';
   const records=document.getElementById('records');
+  // Homepage graph opens the complete list; its recent section stays at six entries.
+  if(records && records.dataset.kind==='recent') {
+    const params=new URLSearchParams(location.search);
+    if(params.has('tag') || params.has('category') || params.has('page')) {
+      location.replace('/all/'+location.search+'#records');
+      return;
+    }
+    document.querySelectorAll('[data-tag]').forEach(el=>{
+      el.addEventListener('click',e=>{
+        if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;
+        if(el.dataset.dragged==='true'){e.preventDefault();el.dataset.dragged='false';return;}
+        e.preventDefault();
+        location.assign('/all/?'+new URLSearchParams({tag:el.dataset.tag})+'#records');
+      });
+      if(el.tagName.toLowerCase()==='g')el.addEventListener('keydown',e=>{
+        if(e.key==='Enter' || e.key===' '){e.preventDefault();el.dataset.dragged='false';el.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
+      });
+    });
+    return;
+  }
   const catalog=document.getElementById('article-catalog');
   if(!records || !catalog) return;
-  const home=records.dataset.kind==='home';
+  const home=records.dataset.kind==='all';
   const base=records.dataset.base;
   const size=Number(records.dataset.pageSize);
   const entries=[...catalog.content.querySelectorAll('.essay-entry')];
@@ -33,7 +53,7 @@
     let path=target===1 ? base : `${base}page/${target}/`;
     const params=new URLSearchParams();
     if(tag || category) {
-      path='/';
+      path=base;
       if(tag)params.set('tag',tag);
       if(category)params.set('category',category);
       if(target!==1)params.set('page',String(target));
@@ -68,7 +88,7 @@
     const total=matches.length,pages=Math.max(1,Math.ceil(total/size));
     number=Math.min(pages,Math.max(1,number));
     list.replaceChildren(...matches.slice((number-1)*size,number*size).map(n=>n.el.cloneNode(true)));
-    document.getElementById('list-summary').textContent=`共 ${total} 篇 · 第 ${number} / ${pages} 页`;
+    document.getElementById('list-summary').textContent=`按最近更新排列 · 共 ${total} 篇 · 第 ${number} / ${pages} 页`;
     heading.textContent=home && (tag || category) ? '筛选后的笔记' : originalTitle;
     tagButtons.forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.tag===tag)));
     if(toolbar) {

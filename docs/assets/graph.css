@@ -116,3 +116,11 @@ html { scroll-padding-top: 160px; }
   .pagination { justify-content: space-between; gap: .45rem; font-size: .85rem; }
   .pager-step { padding-inline: .55rem; }
 }
+
+/* Dates stay secondary to titles, with room to wrap on small screens. */
+.note-time { display: flex; flex-wrap: wrap; gap: .35rem 1rem; color: var(--muted); font-size: .78rem; margin-top: .6rem; line-height: 1.7; }
+.note-time span { white-space: nowrap; }
+.article-meta .note-time { margin: 0; }
+.recent-records .section-heading { align-items: flex-start; }
+.recent-records .more-notes { white-space: nowrap; padding-top: .2rem; }
+@media (max-width: 400px) { .recent-records .section-heading { gap: .6rem; } .recent-records .more-notes { font-size: .8rem; } }

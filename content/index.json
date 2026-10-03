@@ -1053,5 +1053,18 @@
     "sourceGroup": "摘录",
     "excerpt": "重新审视 AI 整理与自己的实际感受之间的距离。",
     "updatedAt": "2026-10-03"
+  },
+  {
+    "title": "blog",
+    "slug": "2026-10-3",
+    "category": "随笔",
+    "tags": [
+      "选择"
+    ],
+    "draft": false,
+    "provenance": "个人记录",
+    "sourceNote": "个人记录。",
+    "excerpt": "blog的起点",
+    "updatedAt": "2026-10-03"
   }
 ]

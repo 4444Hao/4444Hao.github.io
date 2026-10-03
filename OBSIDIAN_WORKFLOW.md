@@ -29,10 +29,10 @@ Obsidian 编辑博客/content 中的笔记 → 保存 → Source Control 检查�
 1. Obsidian 设置 → 核心插件，启用 Templates（模板）。
 2. 模板设置的 Template folder location 选择 博客/templates（若将博客单独打开成库，则选 templates）。
 3. 在 博客/content 新建笔记，如 walk-in-wind；按 Ctrl+P，选择 Templates: Insert template，插入 new-post。
-4. 将标题、摘要、分类、标签改好。模板插入时自动填写当前日期；以后修改内容时手动更新 updated。
+4. 将标题、摘要、分类、标签改好。模板插入时自动填写当前日期和时分；以后修改内容时手动更新 updated。
 5. draft 默认 true；确定要在网页展示后改为 false，再提交、推送。
 
-也可复制一篇现有文章到 content，改文件名、slug（若有）、标题、摘要、标签和日期。复制模板文件时，需把 updated 中的日期占位符替换成实际 YYYY-MM-DD 日期。
+也可复制一篇现有文章到 content，改文件名、slug（若有）、标题、摘要、标签和日期。复制模板文件时，需把 updated 中的日期和时间占位符替换成实际 YYYY-MM-DD HH:mm 时间。
 
 ## 图片
 
@@ -51,3 +51,7 @@ Obsidian 编辑博客/content 中的笔记 → 保存 → Source Control 检查�
 ## 可选本地预览
 
 在 VS Code 打开上述博客目录，Ctrl+Shift+B 构建，运行预览任务。首次需 python -m pip install -r requirements.txt。日常自动发布无需本机手动构建。
+
+更新时间说明：所有列表按 updated 倒序。每篇显示写作日期（已知时）及必要的更新时间；写作日期未知则只显示更新于。首页显示最近 6 篇，完整列表位于 /all/。
+
+updated 推荐填写日期和时分，如 2026-10-03 16:15。同日修订按时分排序；仅日期按当天 00:00 处理。未注明时区时按中国标准时间解释，不根据文件修改时间或重新构建时间自动改变。

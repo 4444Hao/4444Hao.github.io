@@ -65,8 +65,8 @@ class BuildTests(unittest.TestCase):
         before=self.hash_output();self.build();self.assertEqual(before,self.hash_output())
     def test_static_pagination_and_section_contents(self):
         notes=json.loads((self.root/'content/index.json').read_text(encoding='utf-8'))
-        visible=sorted([n for n in notes if not n['draft']],key=lambda n:n.get('date',''),reverse=True)
-        bases={'/':None,'/essays/':'随笔','/notes/':'短记','/excerpts/':'摘录','/collections/':'专题整理'}
+        visible=sorted([n for n in notes if not n['draft']],key=lambda n:n['updatedAt'],reverse=True)
+        bases={'/all/':None,'/essays/':'随笔','/notes/':'短记','/excerpts/':'摘录','/collections/':'专题整理'}
         for base,category in bases.items():
             subset=[n for n in visible if category is None or n['category']==category]
             pages=max(1,(len(subset)+9)//10);seen=[]
@@ -80,10 +80,53 @@ class BuildTests(unittest.TestCase):
                     self.assertNotIn('tag-graph',parsed.ids)
                     self.assertNotIn('home-title',parsed.ids)
                     self.assertTrue(all(e['data-category']==category for e in parsed.entries))
-                else:self.assertIn('tag-graph',parsed.ids)
+                else:self.assertNotIn('tag-graph',parsed.ids)
                 seen.extend(e['data-category'] for e in parsed.entries)
             self.assertEqual(len(seen),len(subset))
-        self.assertIn('关于',(self.root/'docs/index.html').read_text(encoding='utf-8'))
+        home=(self.root/'docs/index.html').read_text(encoding='utf-8')
+        parsed=Links();parsed.feed(home)
+        self.assertEqual([e['data-slug'] for e in parsed.entries],[n['slug'] for n in visible[:6]])
+        self.assertEqual(len(parsed.entries),min(6,len(visible)))
+        self.assertIn('最近笔记',home)
+        self.assertIn('/all/#records',parsed.links)
+        self.assertNotIn('pagination',parsed.ids)
+        self.assertIn('tag-graph',parsed.ids)
+        self.assertIn('关于',home)
+    def test_recent_update_moves_old_note_and_displays_dates(self):
+        file=self.root/'content/test-recent-update.md'
+        data={'title':'修订旧笔记','category':'短记','tags':['测试更新'],'summary':'时间排序测试','updated':'2000-01-01','date':'1999-01-01','draft':False}
+        def write():file.write_text('---\n'+yaml.safe_dump(data,allow_unicode=True,sort_keys=False)+'---\n\n旧文章的新补充。\n',encoding='utf-8')
+        try:
+            write();self.build()
+            home=Links();home.feed((self.root/'docs/index.html').read_text(encoding='utf-8'))
+            self.assertNotIn('test-recent-update',[e['data-slug'] for e in home.entries])
+            data['updated']='2099-01-01';write();self.build()
+            home=Links();home.feed((self.root/'docs/index.html').read_text(encoding='utf-8'))
+            self.assertEqual(home.entries[0]['data-slug'],'test-recent-update')
+            for path in ('all/index.html','notes/index.html'):
+                parsed=Links();parsed.feed((self.root/'docs'/path).read_text(encoding='utf-8'))
+                self.assertEqual(parsed.entries[0]['data-slug'],'test-recent-update')
+            article=(self.root/'docs/essays/test-recent-update/index.html').read_text(encoding='utf-8')
+            self.assertIn('写于 <time datetime="1999-01-01"',article)
+            self.assertIn('更新于 <time datetime="2099-01-01"',article)
+            # Same-day clock time wins over explicit order and date-only midnight.
+            earlier=self.root/'content/test-earlier-update.md'
+            earlier_data={**data,'title':'同日较早修订','updated':'2099-01-01 08:00','order':-999}
+            earlier.write_text('---\n'+yaml.safe_dump(earlier_data,allow_unicode=True,sort_keys=False)+'---\n\n较早更新。\n',encoding='utf-8')
+            data['updated']='2099-01-01 16:15';write();self.build()
+            home=Links();home.feed((self.root/'docs/index.html').read_text(encoding='utf-8'))
+            self.assertEqual([e['data-slug'] for e in home.entries[:2]],['test-recent-update','test-earlier-update'])
+            self.assertIn('2099-01-01 16:15',(self.root/'docs/index.html').read_text(encoding='utf-8'))
+            earlier.unlink()
+            data.pop('date');write();self.build()
+            article=(self.root/'docs/essays/test-recent-update/index.html').read_text(encoding='utf-8')
+            self.assertNotIn('写于',article)
+            self.assertIn('更新于',article)
+        finally:
+            file.unlink(missing_ok=True)
+            (self.root/'content/test-earlier-update.md').unlink(missing_ok=True)
+            self.build()
+
     def hash_output(self):
         return {str(p.relative_to(self.root/'docs')):hashlib.sha256(p.read_bytes()).hexdigest() for p in (self.root/'docs').rglob('*') if p.is_file()}
     def test_new_tags_drafts_removal_and_bad_metadata(self):
