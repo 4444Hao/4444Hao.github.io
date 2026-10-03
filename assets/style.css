@@ -78,7 +78,7 @@ img { max-width: 100%; height: auto; }
 .skip-link:focus { transform: translateY(0); color: white; }
 .site-header { min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 2rem; border-bottom: 1px solid var(--line); }
 .brand { display: inline-flex; align-items: center; gap: .85rem; font-family: var(--serif); font-size: 1.15rem; font-weight: 600; letter-spacing: .12em; }
-.brand-mark { display: grid; place-items: center; width: 30px; height: 34px; color: var(--green); border: 1px solid #91aa89; font-size: 1.1rem; font-weight: 400; letter-spacing: 0; }
+.brand-mark { display: block; width: 32px; height: 32px; flex-shrink: 0; border: 0; object-fit: contain; }
 .site-header nav { display: flex; gap: 2rem; font-size: .9rem; color: var(--muted); }
 .site-header nav a { padding-block: .5rem; }
 .site-header nav a[aria-current] { color: var(--ink); text-decoration: underline; text-decoration-color: #91aa89; text-underline-offset: .65rem; }

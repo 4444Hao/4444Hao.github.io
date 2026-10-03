@@ -234,7 +234,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
   <meta property="og:description" content="{esc(desc)}">
   <meta property="og:type" content="{'article' if article else 'website'}">
   <meta property="og:url" content="{esc(ORIGIN + path)}">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=wind-voice">
   <link rel="stylesheet" href="/assets/style.css">
   <link rel="stylesheet" href="/assets/graph.css">
 <script src="/assets/filter.js" defer></script>
@@ -243,7 +243,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="site-chrome"><header class="site-header wrap">
-    <a class="brand" href="/" aria-label="{esc(SITE['title'])}首页"><span class="brand-mark" aria-hidden="true">木</span><span>{esc(SITE['title'])}</span></a>
+    <a class="brand" href="/" aria-label="{esc(SITE['title'])}首页"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
     <nav aria-label="主要导航">{''.join(nav)}</nav>
   </header>{toolbar}</div>
   <main id="main" class="wrap {'reading-main' if article else ''}">{body}</main>
