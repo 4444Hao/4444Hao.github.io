@@ -5,3 +5,4 @@ Thumbs.db
 .preview/
 .obsidian/
 .trash/
+node_modules/

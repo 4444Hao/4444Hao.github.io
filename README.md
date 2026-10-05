@@ -153,7 +153,7 @@ sourceNote: 个人记录。
 - AI 协助内容在 provenance/sourceNote 说明协助范围。
 - Obsidian 双链和图片嵌入需转成标准 Markdown；当前构建不支持 `[[笔记]]` 和 `![[图片]]`。
 - 代码围栏只用于正文中的局部代码，不包住整篇文章和开头属性。
-- Mermaid 第一版按代码块展示，不生成图；原始 HTML 会转义，不执行。
+- Mermaid 使用标准的 ` ```mermaid ` 代码围栏。GitHub Actions 构建时将图表转为站内 SVG；图表显示无需 JavaScript，也不访问外部图表服务。图可横向滑动，点击可单独查看，折叠区保留源码；普通代码块仍按代码显示。语法错误会使构建失败，并在 Actions 日志中显示对应文章。
 - 图片放进 `assets/images/`，网站使用 `![说明](/assets/images/tree.webp)`。要把图片文件与文章一起推送；此站点根路径在 Obsidian 中可能无法预览。
 - 文章间链接可使用 `[另一篇文章](/essays/另一篇的英文文件名/)`。删除目标文章前检查相关链接。
 
@@ -204,9 +204,11 @@ Actions 构建结果作为网页产物直接部署，**不回写源码分支中�
 
 ```powershell
 python -m pip install -r requirements.txt
+$env:PUPPETEER_SKIP_DOWNLOAD = '1'
+npm ci
 ```
 
-Ctrl+Shift+B 构建，再运行「预览博客（8001）」任务；或在终端分别执行：
+本地需要 Node.js 22.13 或更新版本和已安装的 Edge/Chrome；首次安装 Mermaid CLI 后，Ctrl+Shift+B 构建，再运行「预览博客（8001）」任务；或在终端分别执行：
 
 ```powershell
 python build.py

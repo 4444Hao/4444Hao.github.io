@@ -18,6 +18,7 @@ import re
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse, quote
+from render_diagrams import render_diagrams
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "docs"
@@ -107,13 +108,15 @@ def inline(text: str) -> str:
     return text
 
 
-def markdown(text: str) -> str:
+def markdown(text: str, slug: str) -> tuple[str, list[str]]:
     """Paragraphs, hard line breaks, headings, lists, quotes and fenced code."""
     blocks: list[str] = []
+    diagrams: list[str] = []
     paragraph: list[str] = []
     list_items: list[str] = []
     list_kind: str | None = None
     code: list[str] | None = None
+    code_language: str | None = None
     quotes: list[str] = []
 
     def flush() -> None:
@@ -159,9 +162,19 @@ def markdown(text: str) -> str:
             if code is None:
                 flush()
                 code = []
+                code_language = line[3:].strip().lower()
             else:
-                blocks.append("<pre><code>" + esc("\n".join(code)) + "</code></pre>")
+                raw_source = "\n".join(code)
+                source = esc(raw_source)
+                if code_language == "mermaid":
+                    diagrams.append(raw_source)
+                    number = len(diagrams)
+                    asset = f"/assets/diagrams/{slug}-{number}.svg"
+                    blocks.append(f'<figure class="mermaid-figure"><a class="mermaid-image" href="{asset}" aria-label="单独查看流程图 {number}"><img src="{asset}" alt="流程图 {number}" loading="lazy" decoding="async"></a><figcaption>流程图 {number} · 可横向滑动，点击图片单独查看</figcaption><details><summary>查看图表源码</summary><pre><code>{source}</code></pre></details></figure>')
+                else:
+                    blocks.append("<pre><code>" + source + "</code></pre>")
                 code = None
+                code_language = None
             continue
         if code is not None:
             code.append(raw)
@@ -203,7 +216,7 @@ def markdown(text: str) -> str:
     if code is not None:
         raise ValueError("Unclosed Markdown code fence")
     flush()
-    return "\n".join(blocks)
+    return "\n".join(blocks), diagrams
 
 
 def write(path: str, content: str) -> None:
@@ -331,10 +344,10 @@ class BodyText(HTMLParser):
     def __init__(self):
         super().__init__(); self.text = []; self.skip = 0
     def handle_starttag(self, tag, attrs):
-        if tag in ('h1','h2','h3','h4','h5','h6'):
+        if tag in ('h1','h2','h3','h4','h5','h6','figcaption','summary'):
             self.skip += 1
     def handle_endtag(self, tag):
-        if tag in ('h1','h2','h3','h4','h5','h6'):
+        if tag in ('h1','h2','h3','h4','h5','h6','figcaption','summary'):
             self.skip -= 1
     def handle_data(self, data):
         if not self.skip: self.text.append(data)
@@ -357,11 +370,12 @@ def build() -> None:
         if n.get('date'): date.fromisoformat(n['date'])
     notes = sorted([n for n in MANIFEST if not n['draft']], key=lambda n: updated_time(n['updatedAt']), reverse=True)
     # Validate and render before replacing output, so a bad note preserves the last preview.
-    rendered = {}
+    rendered, diagrams = {}, {}
     for n in notes:
         content = CONTENT[n['slug']]
         if re.search(r'\[\[', content): raise ValueError(f'Resolve Obsidian links: {n["slug"]}')
-        rendered[n['slug']] = markdown(content)
+        rendered[n['slug']], diagrams[n['slug']] = markdown(content, n['slug'])
+    diagram_assets = render_diagrams(ROOT, diagrams)
     total = sum(word_count(body) for body in rendered.values())
     updated = max((n['updatedAt'] for n in notes), key=updated_time) if notes else '暂无'
     if OUT.exists():
@@ -370,6 +384,10 @@ def build() -> None:
         shutil.rmtree(OUT)
     OUT.mkdir()
     shutil.copytree(ROOT / 'assets', OUT / 'assets')
+    if diagram_assets:
+        (OUT / 'assets' / 'diagrams').mkdir(parents=True, exist_ok=True)
+        for name, payload in diagram_assets.items():
+            (OUT / 'assets' / 'diagrams' / name).write_bytes(payload)
     write('.nojekyll', '')
     # All graph counts and relationships come exclusively from non-draft notes.
     counts = Counter(t for n in notes for t in n['tags'])

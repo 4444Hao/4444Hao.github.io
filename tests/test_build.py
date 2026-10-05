@@ -32,7 +32,7 @@ class BuildTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp=tempfile.TemporaryDirectory()
         cls.root=Path(cls.temp.name)/'blog';cls.root.mkdir()
-        for name in ('build.py','site.json'):shutil.copy2(ROOT/name,cls.root/name)
+        for name in ('build.py','site.json','render_diagrams.py'):shutil.copy2(ROOT/name,cls.root/name)
         for name in ('assets','content'):shutil.copytree(ROOT/name,cls.root/name)
         cls.build()
     @classmethod
@@ -63,6 +63,15 @@ class BuildTests(unittest.TestCase):
                 if url.fragment and target.suffix=='.html':self.assertIn(unquote(url.fragment),parsed[target.resolve()].ids,(file,link))
         for n in notes:self.assertEqual((self.root/'docs/essays'/n['slug']).exists(),not n['draft'])
         before=self.hash_output();self.build();self.assertEqual(before,self.hash_output())
+    def test_mermaid_is_pre_rendered_without_page_scripts(self):
+        page=(self.root/'docs/essays/note-1f486d44a9ee/index.html').read_text(encoding='utf-8')
+        self.assertEqual(page.count('class="mermaid-image"'),2)
+        self.assertNotIn('mermaid.bundle',page)
+        self.assertIn("style-src 'self'",page)
+        for number in (1,2):
+            svg=self.root/f'docs/assets/diagrams/note-1f486d44a9ee-{number}.svg'
+            self.assertTrue(svg.is_file())
+            self.assertIn(b'<svg',svg.read_bytes()[:500])
     def test_static_pagination_and_section_contents(self):
         notes=json.loads((self.root/'content/index.json').read_text(encoding='utf-8'))
         visible=sorted([n for n in notes if not n['draft']],key=lambda n:n['updatedAt'],reverse=True)
