@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -89,5 +90,13 @@ def render_diagrams(root: Path, sources: dict[str, list[str]]) -> dict[str, byte
                 svg = output_file.read_bytes()
                 if b"<svg" not in svg[:500]:
                     raise ValueError(f"{slug}: Mermaid 图表 {number} 没有生成有效 SVG")
-                assets[name] = svg
+                root_tag = re.search(rb'<svg\b[^>]*>', svg)
+                view_box = re.search(rb'\bviewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"', root_tag.group()) if root_tag else None
+                if not view_box or b'width="100%"' not in root_tag.group():
+                    raise ValueError(f"{slug}: Mermaid 图表 {number} 缺少有效尺寸")
+                width, height = map(float, view_box.groups())
+                if width <= 0 or height <= 0:
+                    raise ValueError(f"{slug}: Mermaid 图表 {number} 尺寸无效")
+                sized_tag = root_tag.group().replace(b'width="100%"', f'width="{width:g}" height="{height:g}"'.encode(), 1)
+                assets[name] = svg.replace(root_tag.group(), sized_tag, 1)
     return assets

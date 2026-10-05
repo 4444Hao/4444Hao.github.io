@@ -170,7 +170,7 @@ def markdown(text: str, slug: str) -> tuple[str, list[str]]:
                     diagrams.append(raw_source)
                     number = len(diagrams)
                     asset = f"/assets/diagrams/{slug}-{number}.svg"
-                    blocks.append(f'<figure class="mermaid-figure"><a class="mermaid-image" href="{asset}" aria-label="单独查看流程图 {number}"><img src="{asset}" alt="流程图 {number}" loading="lazy" decoding="async"></a><figcaption>流程图 {number} · 可横向滑动，点击图片单独查看</figcaption><details><summary>查看图表源码</summary><pre><code>{source}</code></pre></details></figure>')
+                    blocks.append(f'<figure class="mermaid-figure"><a class="mermaid-image" href="{asset}" aria-label="单独查看流程图 {number}"><img src="{asset}" alt="流程图 {number}" loading="lazy" decoding="async"></a><figcaption>流程图 {number} · 点击图片单独查看</figcaption><details><summary>查看图表源码</summary><pre><code>{source}</code></pre></details></figure>')
                 else:
                     blocks.append("<pre><code>" + source + "</code></pre>")
                 code = None
