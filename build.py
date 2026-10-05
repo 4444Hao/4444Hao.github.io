@@ -243,11 +243,11 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
   <div class="site-chrome"><header class="site-header wrap">
-    <a class="brand" href="/" aria-label="{esc(SITE['title'])}首页"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
+    <a class="brand" href="/about/" aria-label="关于{esc(SITE['title'])}"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
     <nav aria-label="主要导航">{''.join(nav)}</nav>
   </header>{toolbar}</div>
   <main id="main" class="wrap {'reading-main' if article else ''}">{body}</main>
-  <footer class="site-footer wrap"><span>Hao · 习惯记录眼所见、心所想</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
+  <footer class="site-footer wrap"><span>走心地旁白</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
 </body>
 </html>
 '''
@@ -426,7 +426,7 @@ def build() -> None:
         category_href=SECTIONS.get(n['category'], '/?category='+quote(n['category'])+'#records')
         body=f"""<div class="reading-layout{' with-toc' if toc else ''}"><article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header><div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(updated_label(n['updatedAt']))}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>{toc}</div>"""
         write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',description=n['excerpt'],article=True))
-    about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好，我是 Hao。</h1></header><div class="prose"><p>我是一名大学生，习惯用 Obsidian 记录眼所见、心所想。</p><p>我喜欢绿色、树木、风与小动物，也喜欢绘画、硬笔书法，以及独处时自己的节奏。</p><p>这里先放随笔、短记、摘录与专题整理。从文字、作品和见闻中，慢慢留下一些关于自己的线索。</p><p>摘录与 AI 协助整理会单独标明；收藏一段文字，也可能只是想停下来想一想。</p><p>写下来，再慢慢回头看。</p></div></article>'
+    about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好。</h1></header><div class="prose"><p>这是一个主要由 GPT-6.1 Sol 搭建完成的个人博客。</p><p>使用 Obsidian + Git 插件维护内容，GitHub Pages 静态托管，GitHub Actions 自动构建与部署。</p></div></article>'
     write('about/index.html',page('关于',about,current='about',path='/about/'))
     write('404.html',page('没有找到这页','<section class="page-heading"><h1>这页暂时不在这里。</h1><p><a href="/">回到首页</a></p></section>',current='',path='/404.html'))
     paths=listing_paths+['/about/']+[f'/essays/{n["slug"]}/' for n in notes]

@@ -6,35 +6,35 @@
     },
     {
       "tag": "意义",
-      "count": 18
+      "count": 17
     },
     {
       "tag": "情绪",
-      "count": 16
-    },
-    {
-      "tag": "行动",
-      "count": 15
+      "count": 14
     },
     {
       "tag": "回忆",
       "count": 13
     },
     {
-      "tag": "日常",
-      "count": 13
+      "tag": "行动",
+      "count": 11
     },
     {
       "tag": "学习",
-      "count": 11
+      "count": 9
     },
     {
       "tag": "阅读",
-      "count": 11
+      "count": 9
+    },
+    {
+      "tag": "日常",
+      "count": 8
     },
     {
       "tag": "关系",
-      "count": 8
+      "count": 7
     },
     {
       "tag": "独处",
@@ -43,10 +43,6 @@
     {
       "tag": "自然",
       "count": 4
-    },
-    {
-      "tag": "动物",
-      "count": 2
     }
   ],
   "links": [
@@ -63,7 +59,7 @@
     {
       "source": "关系",
       "target": "情绪",
-      "weight": 3
+      "weight": 2
     },
     {
       "source": "关系",
@@ -79,11 +75,6 @@
       "source": "关系",
       "target": "选择",
       "weight": 3
-    },
-    {
-      "source": "动物",
-      "target": "日常",
-      "weight": 2
     },
     {
       "source": "回忆",
@@ -118,7 +109,7 @@
     {
       "source": "学习",
       "target": "情绪",
-      "weight": 2
+      "weight": 1
     },
     {
       "source": "学习",
@@ -128,7 +119,7 @@
     {
       "source": "学习",
       "target": "行动",
-      "weight": 6
+      "weight": 4
     },
     {
       "source": "学习",
@@ -163,7 +154,7 @@
     {
       "source": "情绪",
       "target": "行动",
-      "weight": 3
+      "weight": 2
     },
     {
       "source": "情绪",
@@ -198,7 +189,7 @@
     {
       "source": "意义",
       "target": "阅读",
-      "weight": 5
+      "weight": 4
     },
     {
       "source": "日常",
@@ -208,12 +199,7 @@
     {
       "source": "日常",
       "target": "行动",
-      "weight": 5
-    },
-    {
-      "source": "日常",
-      "target": "阅读",
-      "weight": 1
+      "weight": 3
     },
     {
       "source": "独处",

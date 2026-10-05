@@ -70,24 +70,6 @@
     "updatedAt": "2026-10-03"
   },
   {
-    "title": "答辩的一天",
-    "slug": "a-day-of-presentations",
-    "category": "随笔",
-    "tags": [
-      "学习",
-      "行动",
-      "情绪"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 4,
-    "sourceFile": "答辩的一天.md",
-    "sourceGroup": "随笔",
-    "excerpt": "从一次答辩，思考背稿与真正表达的距离。",
-    "updatedAt": "2026-10-03"
-  },
-  {
     "title": "图书馆选书",
     "slug": "choosing-a-book",
     "category": "随笔",
@@ -192,40 +174,6 @@
     "updatedAt": "2026-10-03"
   },
   {
-    "title": "布偶猫",
-    "slug": "a-ragdoll-cat",
-    "category": "短记",
-    "tags": [
-      "动物",
-      "日常"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 11,
-    "sourceFile": "布偶猫.md",
-    "sourceGroup": "随笔",
-    "excerpt": "一只钻进怀里的小猫，和想养猫的念头。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "小猫期末周",
-    "slug": "a-cat-during-finals",
-    "category": "短记",
-    "tags": [
-      "动物",
-      "日常"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 12,
-    "sourceFile": "小猫期末周.md",
-    "sourceGroup": "随笔",
-    "excerpt": "期末周，小猫仍在垫子里美美地睡着。",
-    "updatedAt": "2026-10-03"
-  },
-  {
     "title": "梦话",
     "slug": "a-campus-dream",
     "category": "短记",
@@ -241,41 +189,6 @@
     "sourceFile": "梦话.md",
     "sourceGroup": "随笔",
     "excerpt": "校园、同学，还有一个漂浮在天空中的巨物。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "对抗困乏",
-    "slug": "small-routines-for-energy",
-    "category": "短记",
-    "tags": [
-      "日常",
-      "行动"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 14,
-    "sourceFile": "对抗困乏.md",
-    "sourceGroup": "随笔",
-    "excerpt": "为白天的精力与夜晚的休息，写下几条安排。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "吃饭睡觉",
-    "slug": "food-rest-and-energy",
-    "category": "随笔",
-    "tags": [
-      "日常",
-      "行动"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 15,
-    "date": "2026-05-26",
-    "sourceFile": "吃饭睡觉.md",
-    "sourceGroup": "随笔",
-    "excerpt": "重新重视饮食和休息，也重视自己的精神状态。",
     "updatedAt": "2026-10-03"
   },
   {
@@ -310,23 +223,6 @@
     "sourceFile": "回头看与顺其自然.md",
     "sourceGroup": "随笔",
     "excerpt": "往前走时茫然，回头看时却豁然开朗。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "赌气",
-    "slug": "a-small-misunderstanding",
-    "category": "短记",
-    "tags": [
-      "关系",
-      "情绪"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 18,
-    "sourceFile": "赌气.md",
-    "sourceGroup": "随笔",
-    "excerpt": "有些冷漠来自猜测，有些事还是想当面问清楚。",
     "updatedAt": "2026-10-03"
   },
   {
@@ -433,40 +329,6 @@
     "sourceFile": "小学读书的挫败.md",
     "sourceGroup": "随笔",
     "excerpt": "小时候读课文的困难，留下了挫败的记忆。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "读动物农场",
-    "slug": "reading-animal-farm",
-    "category": "短记",
-    "tags": [
-      "阅读",
-      "意义"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 25,
-    "sourceFile": "读动物农场.md",
-    "sourceGroup": "随笔",
-    "excerpt": "早起后随手读完一本书，留下思考的起点。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "冥冥中的共时性",
-    "slug": "an-unexpected-coincidence",
-    "category": "短记",
-    "tags": [
-      "阅读",
-      "日常"
-    ],
-    "draft": false,
-    "provenance": "个人记录",
-    "sourceNote": "个人记录。",
-    "order": 26,
-    "sourceFile": "冥冥中的共时性.md",
-    "sourceGroup": "随笔",
-    "excerpt": "重温旧小说时，偶然遇见电影上映的日子。",
     "updatedAt": "2026-10-03"
   },
   {
@@ -986,23 +848,6 @@
     "updatedAt": "2026-10-03"
   },
   {
-    "title": "学习状态反思纪要",
-    "slug": "note-1198db4b320e",
-    "category": "专题整理",
-    "tags": [
-      "学习",
-      "行动"
-    ],
-    "draft": false,
-    "provenance": "AI协助整理",
-    "sourceNote": "AI 协助整理；内容尚待作者核对，不代表其中结论已核实。",
-    "order": 57,
-    "sourceFile": "AI修复\\学习状态反思纪要.md",
-    "sourceGroup": "摘录",
-    "excerpt": "把学习状态的反思整理为几条调整方向。",
-    "updatedAt": "2026-10-03"
-  },
-  {
     "title": "数字耗竭",
     "slug": "note-1f486d44a9ee",
     "category": "专题整理",
@@ -1018,23 +863,6 @@
     "sourceFile": "AI修复\\数字耗竭.md",
     "sourceGroup": "摘录",
     "excerpt": "关于数字生活与状态调整的一份待核材料。",
-    "updatedAt": "2026-10-03"
-  },
-  {
-    "title": "学习与掌握",
-    "slug": "note-6aca8cc02154",
-    "category": "短记",
-    "tags": [
-      "学习",
-      "行动"
-    ],
-    "draft": true,
-    "provenance": "AI协助整理",
-    "sourceNote": "AI 协助整理；内容尚待作者核对，不代表其中结论已核实。",
-    "order": 59,
-    "sourceFile": "AI修复\\文编辑于感受\\学习与掌握.md",
-    "sourceGroup": "摘录",
-    "excerpt": "一条尚未展开的学习想法。",
     "updatedAt": "2026-10-03"
   },
   {
