@@ -242,12 +242,14 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
+  <div class="notebook-shell">
   <div class="site-chrome"><header class="site-header wrap">
     <a class="brand" href="/about/" aria-label="关于{esc(SITE['title'])}"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
     <nav aria-label="主要导航">{''.join(nav)}</nav>
   </header>{toolbar}</div>
   <main id="main" class="wrap {'reading-main' if article else ''}">{body}</main>
   <footer class="site-footer wrap"><span>走心地旁白</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
+  </div>
 </body>
 </html>
 '''
