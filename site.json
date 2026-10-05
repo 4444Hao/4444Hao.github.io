@@ -1,6 +1,6 @@
 {
   "title": "走心旁白",
-  "description": "记录所见、所想，也收藏那些让我停留的文字。",
+  "description": "我的文字与记录。",
   "url": "https://4444hao.github.io",
   "github": "https://github.com/4444Hao",
   "categories": {
@@ -8,5 +8,12 @@
     "短记": "notes",
     "摘录": "excerpts",
     "专题整理": "collections"
+  },
+  "sectionDescriptions": {
+    "随笔": "关于经历和想法。",
+    "短记": "简短记录。",
+    "摘录": "读到并保存的文字。",
+    "专题整理": "按主题整理的笔记。",
+    "全部笔记": "所有公开的笔记。"
   }
 }

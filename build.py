@@ -318,8 +318,10 @@ def listing(notes: list[dict], *, page_number=1, title='全部笔记', base='/',
     portion=notes[(page_number-1)*PAGE_SIZE:page_number*PAGE_SIZE]
     heading = 'h2' if home else 'h1'
     extra = '<a class="back-to-graph" href="#topics-title">回到图谱 ↑</a>' if home else ''
+    intro = SITE.get('sectionDescriptions', {}).get(title, '')
+    intro_html = f'<p class="listing-intro">{esc(intro)}</p>' if intro else ''
     return f"""<section id="records" class="records{' section-listing' if not home else ''}" aria-labelledby="records-title" data-kind="{kind}" data-base="{base}" data-page="{page_number}" data-page-size="{PAGE_SIZE}">
-    <header class="{'section-heading' if home else 'listing-heading'}"><div><{heading} id="records-title" tabindex="-1">{esc(title)}</{heading}><p id="list-summary" role="status" aria-live="polite">按最近更新排列 · 共 {total} 篇 · 第 {page_number} / {pages} 页</p></div>{extra}</header>
+    <header class="{'section-heading' if home else 'listing-heading'}"><div><{heading} id="records-title" tabindex="-1">{esc(title)}</{heading}>{intro_html}<p id="list-summary" role="status" aria-live="polite">按最近更新排列 · 共 {total} 篇 · 第 {page_number} / {pages} 页</p></div>{extra}</header>
     <ul class="essay-list">{''.join(entry(n) for n in portion)}</ul>
     <div id="empty-results" class="empty-results" hidden><p>这里暂时没有符合条件的笔记。</p><button type="button" id="empty-clear">查看全部笔记</button></div>{pager(total,page_number,base)}
     <template id="article-catalog">{''.join(entry(n) for n in notes)}</template></section>"""

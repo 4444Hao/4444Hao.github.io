@@ -97,6 +97,8 @@ html { scroll-padding-top: 160px; }
 .section-listing { margin-top: 0; }
 .listing-heading { padding: 3rem 0 1.5rem; border-bottom: 1px solid #bccfba; }
 .listing-heading h1 { font: 500 clamp(1.9rem, 4vw, 2.7rem)/1.5 var(--serif); letter-spacing: .04em; margin: 0 0 .6rem; }
+.listing-intro { color: var(--muted); font-size: .95rem; margin: .25rem 0 .5rem; }
+.listing-intro + #list-summary { margin-top: 0; }
 #list-summary { font-size: .8rem; color: var(--muted); margin: .5rem 0 0; }
 #records-title:focus { outline: none; }
 .pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: 2rem 0 0; padding-top: 1.2rem; font-size: .9rem; }
