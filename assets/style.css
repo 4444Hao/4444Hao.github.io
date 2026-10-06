@@ -162,12 +162,3 @@ h1, h2, h3, p { margin-top: 0; }
   .prose { font-size: 12pt; }
   .article-heading { padding-top: 0; }
 }
-
-/* Rendered SVGs remain readable when JavaScript is unavailable. */
-.prose .mermaid-figure { margin: 1.6rem 0; padding: 1rem; border: 1px solid var(--line); border-radius: 7px; background: #fbfcf7; }
-.prose .mermaid-image { display: block; }
-.prose .mermaid-image img { display: block; width: auto; max-width: 100%; height: auto; margin-inline: auto; }
-.prose .mermaid-figure figcaption { color: var(--muted); font: .78rem/1.7 var(--sans); margin-top: .55rem; }
-.prose .mermaid-figure details { margin-top: .65rem; color: var(--muted); font: .8rem/1.6 var(--sans); }
-.prose .mermaid-figure summary { cursor: pointer; }
-.prose .mermaid-figure pre { margin: .5rem 0 0; overflow-x: auto; }
