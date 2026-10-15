@@ -12,3 +12,7 @@ Obsidian 编辑 content 中的 Markdown
 → GitHub Actions 验证、构建、部署
 → 刷新网站确认
 
+RSS 订阅地址：https://4444hao.github.io/feed.xml
+
+新文章首次公开时，在 Markdown 开头属性中添加 `published: 'YYYY-MM-DD HH:mm'`；以后只更新 `updated`，不要改 `published`。草稿不进入 RSS；没有发布日期的旧文作为无日期存档。订阅源随网站自动构建，不需要单独同步。
+

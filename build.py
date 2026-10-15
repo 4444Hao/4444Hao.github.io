@@ -5,6 +5,7 @@ import argparse
 import unicodedata
 import math
 from collections import Counter
+from email.utils import format_datetime
 from itertools import combinations
 try:
     import yaml
@@ -18,6 +19,7 @@ import re
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse, quote
+from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "docs"
@@ -37,6 +39,9 @@ def load_notes():
             if not n.get(key): raise ValueError(f'{file.name}: missing {key}')
         n['excerpt'] = str(n.pop('summary'))
         n['updatedAt'] = str(n.pop('updated'))
+        if 'published' in n:
+            if not n['published']: raise ValueError(f'{file.name}: published must be a date or datetime')
+            n['published'] = str(n['published'])
         if n.get('date'): n['date'] = str(n['date'])
         else: n.pop('date', None)
         n.setdefault('draft', False)
@@ -59,6 +64,7 @@ CATEGORIES = SITE["categories"]
 ORIGIN = SITE["url"].rstrip("/")
 PAGE_SIZE = 10
 RECENT_SIZE = 6
+RSS_SIZE = 20
 ALL_BASE = "/all/"
 SECTIONS = {'随笔':'/essays/', '短记':'/notes/', '摘录':'/excerpts/', '专题整理':'/collections/'}
 
@@ -230,6 +236,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="theme-color" content="#f7f6ef">
   <link rel="canonical" href="{esc(ORIGIN + path)}">
+  <link rel="alternate" type="application/rss+xml" title="{esc(SITE['title'])} RSS" href="/feed.xml">
   <meta property="og:title" content="{esc(full_title)}">
   <meta property="og:description" content="{esc(desc)}">
   <meta property="og:type" content="{'article' if article else 'website'}">
@@ -248,7 +255,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
     <nav aria-label="主要导航">{''.join(nav)}</nav>
   </header>{toolbar}</div>
   <main id="main" class="wrap {'reading-main' if article else ''}">{body}</main>
-  <footer class="site-footer wrap"><span>走心地旁白</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
+  <footer class="site-footer wrap"><span>走心地旁白</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="/feed.xml" type="application/rss+xml">RSS</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
   </div>
 </body>
 </html>
@@ -263,6 +270,31 @@ def updated_time(value: str) -> datetime:
     value = str(value)
     parsed = datetime.fromisoformat(value)
     return parsed.replace(tzinfo=timezone(timedelta(hours=8))) if parsed.tzinfo is None else parsed
+
+
+def rss_feed() -> str:
+    """Publish recent dated notes, then a stable undated legacy archive."""
+    public = [n for n in MANIFEST if not n['draft']]
+    dated = sorted((n for n in public if n.get('published')),
+                   key=lambda n: updated_time(n['published']), reverse=True)
+    archive = [n for n in public if not n.get('published')]
+    rss = ET.Element('rss', version='2.0')
+    channel = ET.SubElement(rss, 'channel')
+    for tag, value in (('title', SITE['title']), ('link', ORIGIN + '/'),
+                       ('description', SITE['description']), ('language', 'zh-CN')):
+        ET.SubElement(channel, tag).text = value
+    for note in (dated + archive)[:RSS_SIZE]:
+        item = ET.SubElement(channel, 'item')
+        permalink = f'{ORIGIN}/essays/{note["slug"]}/'
+        for tag, value in (('title', note['title']), ('link', permalink),
+                           ('guid', permalink), ('description', note['excerpt'])):
+            ET.SubElement(item, tag).text = value
+        if note.get('published'):
+            ET.SubElement(item, 'pubDate').text = format_datetime(updated_time(note['published']))
+        for category in [note['category'], *note['tags']]:
+            ET.SubElement(item, 'category').text = category
+    ET.indent(rss, space='  ')
+    return ET.tostring(rss, encoding='utf-8', xml_declaration=True).decode('utf-8') + '\n'
 
 
 def updated_label(value: str) -> str:
@@ -354,6 +386,7 @@ def build() -> None:
             raise ValueError(f'Invalid manifest entry: {n}')
         if not isinstance(n['draft'], bool): raise ValueError('draft must be boolean')
         updated_time(n['updatedAt'])
+        if n.get('published'): updated_time(n['published'])
         if n.get('date'): date.fromisoformat(n['date'])
     notes = sorted([n for n in MANIFEST if not n['draft']], key=lambda n: updated_time(n['updatedAt']), reverse=True)
     # Validate and render before replacing output, so a bad note preserves the last preview.
@@ -432,6 +465,7 @@ def build() -> None:
         write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',description=n['excerpt'],article=True))
     about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好。</h1></header><div class="prose"><p>这是一个主要由 GPT-6.1 Sol 搭建完成的个人博客。</p><p>使用 Obsidian + Git 插件维护内容，GitHub Pages 静态托管，GitHub Actions 自动构建与部署。</p></div></article>'
     write('about/index.html',page('关于',about,current='about',path='/about/'))
+    write('feed.xml', rss_feed())
     write('404.html',page('没有找到这页','<section class="page-heading"><h1>这页暂时不在这里。</h1><p><a href="/">回到首页</a></p></section>',current='',path='/404.html'))
     paths=listing_paths+['/about/']+[f'/essays/{n["slug"]}/' for n in notes]
     write('sitemap.xml','<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{esc(ORIGIN+path)}</loc></url>' for path in paths)+'</urlset>\n')
