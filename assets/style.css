@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
   --paper: #f4f0e6;
-  --ink: #30372f;
-  --muted: #666b60;
+  --ink: #263027;
+  --muted: #4e584e;
   --green: #4f684e;
   --line: #cbcaba;
   --serif: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
@@ -37,13 +37,13 @@ button:disabled { cursor: default; }
 .entry-top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .entry-top .essay-link { padding: 0; display: block; }
 .entry-top h3 { font: 500 1.2rem/1.65 var(--serif); margin: 0; overflow-wrap: anywhere; }
-.entry-excerpt { color: var(--muted); font-size: .9375rem; margin: .4rem 0 .55rem; }
-.entry-tags { display: flex; flex-wrap: wrap; gap: .35rem .8rem; font-size: .78rem; color: var(--muted); }
+.entry-excerpt { color: var(--muted); font-size: 1rem; margin: .4rem 0 .55rem; }
+.entry-tags { display: flex; flex-wrap: wrap; gap: .35rem .8rem; font-size: .84rem; color: var(--muted); }
 .entry-tags a::before { content: '#'; color: #8aa280; margin-right: .18rem; }
 .empty-results { padding: 3rem 0; text-align: center; color: var(--muted); }
 .article-heading .entry-tags { margin: -1rem 0 1.5rem; }
-.source-note { font-size: .82rem; line-height: 1.8; color: var(--muted); border-left: 2px solid #a5ab93; padding: .55rem .85rem; margin: 0 0 2rem; background: #ece9dd; }
-.maintenance-date { margin: 2.5rem 0 1rem; font-size: .8rem; color: var(--muted); }
+.source-note { font-size: .88rem; line-height: 1.8; color: var(--muted); border-left: 2px solid #a5ab93; padding: .55rem .85rem; margin: 0 0 2rem; background: #ece9dd; }
+.maintenance-date { margin: 2.5rem 0 1rem; font-size: .86rem; color: var(--muted); }
 .table-scroll { max-width: 100%; overflow-x: auto; margin: 1.5rem 0; }
 .prose table { border-collapse: collapse; font: .92rem/1.8 var(--sans); min-width: 100%; }
 .prose th, .prose td { border: 1px solid var(--line); padding: .65rem .8rem; min-width: 110px; text-align: left; }

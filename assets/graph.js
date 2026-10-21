@@ -10,7 +10,7 @@
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
   const nodes = [...svg.querySelectorAll('.graph-node')].map(el => ({
     el, baseRadius:Number(el.dataset.radius), radius:0, x:0,y:0,vx:0,vy:0,
-    anchorX:0,anchorY:0,dragging:false
+    anchorX:0,anchorY:0,dragging:false,placed:false
   }));
   const edges = [...svg.querySelectorAll('.graph-edges line')].map(el => ({
     el, source:nodes[Number(el.dataset.source)], target:nodes[Number(el.dataset.target)], weight:Number(el.dataset.weight)
@@ -35,7 +35,8 @@
     for(const n of nodes) {
       if(n.dragging) continue;
       if(layoutWide) {
-        n.vx+=(n.anchorX-n.x)*.012; n.vy+=(n.anchorY-n.y)*.012;
+        const anchorStrength=n.placed ? .06 : .012;
+        n.vx+=(n.anchorX-n.x)*anchorStrength; n.vy+=(n.anchorY-n.y)*anchorStrength;
       } else {
         n.vx+=(width/2-n.x)*.00065; n.vy+=(height/2-n.y)*.00065;
       }
@@ -52,7 +53,9 @@
     for(const e of edges) {
       const a=e.source,b=e.target,dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy));
       const ideal=a.radius+b.radius+56;
-      const pull=(d-ideal)*(layoutWide ? .00013 : .0007)*Math.min(3,Math.sqrt(e.weight));
+      const touchingDrag=a.dragging || b.dragging;
+      const strength=layoutWide ? (touchingDrag ? .0012 : .00013) : .0007;
+      const pull=(d-ideal)*strength*Math.min(3,Math.sqrt(e.weight));
       if(!a.dragging){a.vx+=dx/d*pull;a.vy+=dy/d*pull;}
       if(!b.dragging){b.vx-=dx/d*pull;b.vy-=dy/d*pull;}
     }
@@ -130,6 +133,8 @@
         n.y=height/2+Math.sin(angle)*ring*(height/2-n.radius-30);
       } else {n.x*=width/oldWidth;n.y*=height/oldHeight;}
       n.vx=n.vy=0;constrain(n);
+      if(n.placed && layoutWide && wasWide){n.anchorX=n.x;n.anchorY=n.y;}
+      if(!layoutWide || !wasWide) n.placed=false;
     });
     // Prepare a collision-free arrangement before any visible animation starts.
     for(let i=0;i<120;i++) physics();
@@ -177,6 +182,9 @@
     });
     const release=()=>{
       if(!dragging || dragging.node!==n) return;
+      // Keep a deliberately moved desktop topic near its release point.
+      // Its linked topics settle briefly, while idle diagrams stay still.
+      if(dragging.moved && layoutWide){n.anchorX=n.x;n.anchorY=n.y;n.placed=true;}
       n.dragging=false;
       dragging=null;start(80);
     };
