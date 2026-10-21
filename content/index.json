@@ -894,5 +894,20 @@
     "sourceNote": "个人记录。",
     "excerpt": "blog的起点",
     "updatedAt": "2026-10-03"
+  },
+  {
+    "title": "记忆、叙事与记录",
+    "category": "专题整理",
+    "tags": [
+      "记忆",
+      "阅读",
+      "行动"
+    ],
+    "draft": false,
+    "provenance": "个人整理",
+    "sourceNote": "受《思考，快与慢》启发；记忆机制相关表述为个人理解整理。",
+    "slug": "memory-and-narrative",
+    "excerpt": "关于记忆重构、叙事偏差，以及为什么要留下当时的记录。",
+    "updatedAt": "2026-10-20 20:38"
   }
 ]

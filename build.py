@@ -234,7 +234,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
   <meta name="description" content="{esc(desc)}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="theme-color" content="#f7f6ef">
+  <meta name="theme-color" content="#f4f0e6">
   <link rel="canonical" href="{esc(ORIGIN + path)}">
   <link rel="alternate" type="application/rss+xml" title="{esc(SITE['title'])} RSS" href="/feed.xml">
   <meta property="og:title" content="{esc(full_title)}">
@@ -313,15 +313,18 @@ def note_time(note: dict) -> str:
 def recent_listing(notes: list[dict]) -> str:
     return f'''<section id="records" class="records recent-records" data-kind="recent" aria-labelledby="records-title">
     <header class="section-heading"><div><h2 id="records-title">最近笔记</h2><p id="list-summary">按最近内容更新时间排列，包含修订过的笔记。</p></div><a class="more-notes" href="/all/#records">查看全部 →</a></header>
-    <ul class="essay-list">{''.join(entry(n) for n in notes[:RECENT_SIZE])}</ul>
+    <ul class="essay-list">{''.join(entry(n, compact=True) for n in notes[:RECENT_SIZE])}</ul>
 {'' if notes else '<p class="empty-results">还没有公开笔记。</p>'}
     </section>'''
 
 
-def entry(note: dict) -> str:
+def entry(note: dict, compact: bool = False) -> str:
+    time_markup = (f'<div class="note-time"><time datetime="{esc(note["updatedAt"])}" '
+                   f'aria-label="最近内容更新于 {esc(updated_label(note["updatedAt"]))}">'
+                   f'{esc(updated_label(note["updatedAt"]).split()[0])}</time></div>') if compact else note_time(note)
     return f"""<li class="essay-entry" data-slug="{esc(note['slug'])}" data-updated="{esc(note['updatedAt'])}" data-category="{esc(note['category'])}" data-tags="{esc(json.dumps(note['tags'], ensure_ascii=False))}">
     <div class="entry-top"><a class="essay-link" href="/essays/{esc(note['slug'])}/"><h3>{esc(note['title'])}</h3></a><span class="entry-category">{esc(note['category'])}</span></div>
-    <p class="entry-excerpt">{esc(note['excerpt'])}</p>{tag_links(note)}{note_time(note)}</li>"""
+    <p class="entry-excerpt">{esc(note['excerpt'])}</p>{tag_links(note)}{time_markup}</li>"""
 
 
 def listing_path(base: str, number: int) -> str:
@@ -421,9 +424,9 @@ def build() -> None:
     tag_list = ''.join(f'<a class="tag-list-link" data-tag="{esc(tag)}" href="/all/?tag={quote(tag,safe="")}#records" role="button" aria-pressed="false">{esc(tag)}<span>{counts[tag]}</span></a>' for tag in tag_names)
     toolbar='<div class="nav-filters" id="home-filter-status" hidden><div class="filter-status"><span id="filter-description"></span><button type="button" id="remove-tag" aria-label="移除选中的标签" hidden>×</button><span id="result-count"></span><button type="button" id="clear-filters">清除筛选</button></div></div>'
     illustration = '<figure class="landscape"><img src="/assets/wind-in-trees.webp" width="2125" height="740" alt="风中的绿树与安静的草地" decoding="async"></figure>' if (ROOT/'assets/wind-in-trees.webp').exists() else ''
-    body=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['title'])}</h1><p class="intro-line">{esc(SITE['description'])}</p></div><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated_label(updated))}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></section>
-    {illustration}<section class="topics" aria-labelledby="topics-title"><div class="section-heading"><div><p class="eyebrow">话题之间</p><h2 id="topics-title">沿着联系，读下去</h2></div><div class="graph-controls" hidden><button type="button" id="view-graph" aria-pressed="true">图谱</button><button type="button" id="view-list" aria-pressed="false">标签列表</button><button type="button" id="motion-toggle" aria-pressed="false">暂停动态</button></div></div><p class="graph-hint">圆越大，相关记录越多；连线表示共同出现。点击筛选，拖动探索。</p>
-    <div id="graph-panel" hidden><svg id="tag-graph" viewBox="0 0 980 420" role="group" aria-label="标签关系图谱" aria-describedby="graph-help"><desc id="graph-help">标签的大小按公开文章篇数计算，连线按标签共同出现的文章篇数计算。使用 Tab 选择标签，Enter 或空格筛选；也可切换标签列表。</desc><defs><radialGradient id="node-fill" cx="32%" cy="25%" r="80%"><stop offset="0%" stop-color="#fafbf3"/><stop offset="100%" stop-color="#dce6d4"/></radialGradient></defs><g class="graph-edges">{lines}</g><g class="graph-nodes">{''.join(node_markup)}</g></svg></div>
+    body=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['description'].rstrip('。'))}</h1><p class="intro-line">关于经历和想法，也有读到的文字。</p><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated_label(updated))}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></div>{illustration}</section>
+    <section class="topics" aria-labelledby="topics-title"><div class="section-heading"><div><p class="eyebrow">沿着联系，读下去</p><h2 id="topics-title">文章标签</h2></div><div class="graph-controls" hidden><button type="button" id="view-graph" aria-pressed="true">图谱</button><button type="button" id="view-list" aria-pressed="false">标签列表</button></div></div><p class="graph-hint">圆越大，相关记录越多；连线表示标签在同篇笔记中出现。点击标签查看文章。</p>
+    <div id="graph-panel" hidden><svg id="tag-graph" viewBox="0 0 980 420" role="group" aria-label="标签关系图谱" aria-describedby="graph-help"><desc id="graph-help">标签的大小按公开文章篇数计算，连线按标签共同出现的文章篇数计算。使用 Tab 选择标签，Enter 或空格查看相关文章；也可切换标签列表。</desc><g class="graph-edges">{lines}</g><g class="graph-nodes">{''.join(node_markup)}</g></svg></div>
     <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">最近笔记显示 6 篇；点击查看全部浏览完整列表。标签筛选需要启用 JavaScript。</p></noscript></section>
     """
     listing_paths=['/']

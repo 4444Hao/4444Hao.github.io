@@ -7,19 +7,18 @@
   const list = document.getElementById('tag-list');
   const graphButton = document.getElementById('view-graph');
   const listButton = document.getElementById('view-list');
-  const motionButton = document.getElementById('motion-toggle');
   const preference = matchMedia('(prefers-reduced-motion: reduce)');
   const nodes = [...svg.querySelectorAll('.graph-node')].map(el => ({
-    el, baseRadius:Number(el.dataset.radius), radius:0, x:0,y:0,vx:0,vy:0,dragging:false
+    el, baseRadius:Number(el.dataset.radius), radius:0, x:0,y:0,vx:0,vy:0,
+    anchorX:0,anchorY:0,dragging:false
   }));
   const edges = [...svg.querySelectorAll('.graph-edges line')].map(el => ({
     el, source:nodes[Number(el.dataset.source)], target:nodes[Number(el.dataset.target)], weight:Number(el.dataset.weight)
   }));
-  let width=980, height=420, frame=0, ticks=0, paused=preference.matches;
+  let width=980, height=420, frame=0, ticks=0, paused=preference.matches, layoutWide=false;
   let selected=new URLSearchParams(location.search).get('tag') || '', hovered='', dragging=null;
   let active=true;
   document.querySelector('.graph-controls').hidden=false;
-  panel.hidden=false; list.hidden=true;
 
   function paint() {
     for(const n of nodes) n.el.setAttribute('transform',`translate(${n.x.toFixed(2)} ${n.y.toFixed(2)})`);
@@ -35,7 +34,11 @@
   function physics() {
     for(const n of nodes) {
       if(n.dragging) continue;
-      n.vx+=(width/2-n.x)*.00065; n.vy+=(height/2-n.y)*.00065;
+      if(layoutWide) {
+        n.vx+=(n.anchorX-n.x)*.012; n.vy+=(n.anchorY-n.y)*.012;
+      } else {
+        n.vx+=(width/2-n.x)*.00065; n.vy+=(height/2-n.y)*.00065;
+      }
     }
     for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++) {
       const a=nodes[i],b=nodes[j]; let dx=b.x-a.x,dy=b.y-a.y;
@@ -49,7 +52,7 @@
     for(const e of edges) {
       const a=e.source,b=e.target,dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy));
       const ideal=a.radius+b.radius+56;
-      const pull=(d-ideal)*.0007*Math.min(3,Math.sqrt(e.weight));
+      const pull=(d-ideal)*(layoutWide ? .00013 : .0007)*Math.min(3,Math.sqrt(e.weight));
       if(!a.dragging){a.vx+=dx/d*pull;a.vy+=dy/d*pull;}
       if(!b.dragging){b.vx-=dx/d*pull;b.vy-=dy/d*pull;}
     }
@@ -74,21 +77,53 @@
     physics();paint();ticks--;
     if(ticks>0 || dragging) frame=requestAnimationFrame(run);
   }
-  function start(count=160) {
+  function start(count=60) {
     ticks=Math.max(ticks,count);
     if(!frame && !paused && !panel.hidden && !document.hidden && active) frame=requestAnimationFrame(run);
   }
   function resize() {
     if(panel.hidden) return;
-    const oldWidth=width,oldHeight=height;
+    const oldWidth=width,oldHeight=height,wasWide=layoutWide;
     width=Math.max(260,svg.clientWidth);
-    height=width<480?430:400;
+    layoutWide=width>=760;
+    svg.classList.toggle('is-wide',layoutWide);
+    svg.closest('.topics').classList.toggle('wide-graph',layoutWide);
+    height=layoutWide?Math.min(380,180+Math.max(0,nodes.length-14)*10):(width<480?430:400);
+    if(svg.style.height!==`${height}px`) svg.style.height=`${height}px`;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
     const area=nodes.reduce((sum,n)=>sum+Math.PI*n.baseRadius**2,0);
-    const scale=Math.min(1,Math.sqrt(width*height/(Math.max(1,area)*2.4)));
+    const scale=layoutWide ? .58 : Math.min(1,Math.sqrt(width*height/(Math.max(1,area)*2.4)));
+    // On a wide page, the three most-used topics form loose centers. Other
+    // topics sit near the center with which they share the most notes.
+    const major=nodes.slice(0,Math.min(3,nodes.length));
+    const groups=major.map(()=>[]);
+    if(layoutWide) for(let i=major.length;i<nodes.length;i++) {
+      const n=nodes[i];
+      let choice=0,score=-1;
+      major.forEach((m,j)=>{
+        const edge=edges.find(e=>(e.source===n&&e.target===m)||(e.target===n&&e.source===m));
+        const candidate=(edge?edge.weight:0)*100-groups[j].length;
+        if(candidate>score){score=candidate;choice=j;}
+      });
+      groups[choice].push(n);
+    }
+    const spread=Math.min(108,width/(major.length*4.2));
+    major.forEach((n,j)=>{
+      n.anchorX=width*(j+.5)/major.length;
+      n.anchorY=height*(.52+Math.sin((j+1)*1.7)*.05);
+      groups[j].forEach((child,k)=>{
+        const side=k%2===0?-1:1;
+        const rank=Math.floor(k/2);
+        child.anchorX=n.anchorX+side*spread*(.85+rank*.22);
+        child.anchorY=n.anchorY+(k%4<2?-1:1)*(42+rank*5)+Math.sin((k+1)*(j+2)*1.7)*8;
+      });
+    });
     nodes.forEach((n,i)=>{
-      n.radius=n.baseRadius*scale;n.el.querySelector('circle').setAttribute('r',n.radius);
-      if(!n.x) {
+      n.radius=layoutWide?Math.max(n.baseRadius*scale,10+Math.min(4,n.el.dataset.tag.length)*6):n.baseRadius*scale;
+      n.el.querySelector('circle').setAttribute('r',n.radius);
+      if(layoutWide && (!n.x || !wasWide)) {
+        n.x=n.anchorX;n.y=n.anchorY;
+      } else if(!n.x || (wasWide && !layoutWide)) {
         const angle=i*2.399963229728653;
         const ring=Math.sqrt((i+.5)/Math.max(1,nodes.length));
         n.x=width/2+Math.cos(angle)*ring*(width/2-n.radius-30);
@@ -153,20 +188,13 @@
     if(dragging){dragging.node.dragging=false;dragging=null;}
     panel.hidden=!graph;list.hidden=graph;
     graphButton.setAttribute('aria-pressed',String(graph));listButton.setAttribute('aria-pressed',String(!graph));
-    motionButton.hidden=!graph;
     if(graph){resize();}else stop();
   }
   graphButton.addEventListener('click',()=>mode(true));
   listButton.addEventListener('click',()=>mode(false));
-  function motion() {
-    motionButton.setAttribute('aria-pressed',String(paused));
-    motionButton.textContent=paused?'启用动态':'暂停动态';
-    if(paused)stop();else start();
-  }
-  motionButton.addEventListener('click',()=>{paused=!paused;motion();});
-  preference.addEventListener('change',()=>{paused=preference.matches;motion();});
+  preference.addEventListener('change',()=>{paused=preference.matches;if(paused)stop();else start();});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start(40);});
   new ResizeObserver(resize).observe(svg);
   new IntersectionObserver(entries=>{active=entries[0].isIntersecting;if(active)start(40);else stop();}).observe(panel);
-  motion();resize();highlight();
+  mode(true);highlight();
 })();

@@ -18,14 +18,14 @@
     },
     {
       "tag": "行动",
-      "count": 11
-    },
-    {
-      "tag": "学习",
-      "count": 9
+      "count": 12
     },
     {
       "tag": "阅读",
+      "count": 10
+    },
+    {
+      "tag": "学习",
       "count": 9
     },
     {
@@ -43,6 +43,10 @@
     {
       "tag": "自然",
       "count": 4
+    },
+    {
+      "tag": "记忆",
+      "count": 1
     }
   ],
   "links": [
@@ -208,8 +212,23 @@
     },
     {
       "source": "行动",
+      "target": "记忆",
+      "weight": 1
+    },
+    {
+      "source": "行动",
       "target": "选择",
       "weight": 3
+    },
+    {
+      "source": "行动",
+      "target": "阅读",
+      "weight": 1
+    },
+    {
+      "source": "记忆",
+      "target": "阅读",
+      "weight": 1
     },
     {
       "source": "选择",
