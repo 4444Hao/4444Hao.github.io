@@ -466,7 +466,7 @@ def build() -> None:
         category_href=SECTIONS.get(n['category'], '/?category='+quote(n['category'])+'#records')
         body=f"""<div class="reading-layout{' with-toc' if toc else ''}"><article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header><div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(updated_label(n['updatedAt']))}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>{toc}</div>"""
         write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',description=n['excerpt'],article=True))
-    about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好。</h1></header><div class="prose"><p>这是一个主要由 GPT-6.1 Sol 搭建完成的个人博客。</p><p>使用 Obsidian + Git 插件维护内容，GitHub Pages 静态托管，GitHub Actions 自动构建与部署。</p></div></article>'
+    about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好。</h1></header><div class="prose"><p>这是一个搭建中的个人博客。</p><p>使用 Obsidian + Git 插件维护内容，GitHub Pages 静态托管，GitHub Actions 自动构建与部署。</p></div></article>'
     write('about/index.html',page('关于',about,current='about',path='/about/'))
     write('feed.xml', rss_feed())
     write('404.html',page('没有找到这页','<section class="page-heading"><h1>这页暂时不在这里。</h1><p><a href="/">回到首页</a></p></section>',current='',path='/404.html'))
