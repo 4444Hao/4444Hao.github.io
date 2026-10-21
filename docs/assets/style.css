@@ -5,7 +5,7 @@
   --muted: #4e584e;
   --green: #4f684e;
   --line: #cbcaba;
-  --serif: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --serif: "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "STSong", "SimSun", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 /* Fixed grid cells create a scattered arrangement without collisions or motion. */
