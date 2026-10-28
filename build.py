@@ -39,9 +39,7 @@ def load_notes():
             if not n.get(key): raise ValueError(f'{file.name}: missing {key}')
         n['excerpt'] = str(n.pop('summary'))
         n['updatedAt'] = str(n.pop('updated'))
-        if 'published' in n:
-            if not n['published']: raise ValueError(f'{file.name}: published must be a date or datetime')
-            n['published'] = str(n['published'])
+        n.pop('published', None)  # Ignore the former RSS-only date field.
         if n.get('date'): n['date'] = str(n['date'])
         else: n.pop('date', None)
         n.setdefault('draft', False)
@@ -273,24 +271,21 @@ def updated_time(value: str) -> datetime:
 
 
 def rss_feed() -> str:
-    """Publish recent dated notes, then a stable undated legacy archive."""
-    public = [n for n in MANIFEST if not n['draft']]
-    dated = sorted((n for n in public if n.get('published')),
-                   key=lambda n: updated_time(n['published']), reverse=True)
-    archive = [n for n in public if not n.get('published')]
+    """Keep the feed aligned with the site's recently updated public notes."""
+    public = sorted((n for n in MANIFEST if not n['draft']),
+                    key=lambda n: updated_time(n['updatedAt']), reverse=True)
     rss = ET.Element('rss', version='2.0')
     channel = ET.SubElement(rss, 'channel')
     for tag, value in (('title', SITE['title']), ('link', ORIGIN + '/'),
                        ('description', SITE['description']), ('language', 'zh-CN')):
         ET.SubElement(channel, tag).text = value
-    for note in (dated + archive)[:RSS_SIZE]:
+    for note in public[:RSS_SIZE]:
         item = ET.SubElement(channel, 'item')
         permalink = f'{ORIGIN}/essays/{note["slug"]}/'
         for tag, value in (('title', note['title']), ('link', permalink),
                            ('guid', permalink), ('description', note['excerpt'])):
             ET.SubElement(item, tag).text = value
-        if note.get('published'):
-            ET.SubElement(item, 'pubDate').text = format_datetime(updated_time(note['published']))
+        ET.SubElement(item, 'pubDate').text = format_datetime(updated_time(note['updatedAt']))
         for category in [note['category'], *note['tags']]:
             ET.SubElement(item, 'category').text = category
     ET.indent(rss, space='  ')
@@ -389,7 +384,6 @@ def build() -> None:
             raise ValueError(f'Invalid manifest entry: {n}')
         if not isinstance(n['draft'], bool): raise ValueError('draft must be boolean')
         updated_time(n['updatedAt'])
-        if n.get('published'): updated_time(n['published'])
         if n.get('date'): date.fromisoformat(n['date'])
     notes = sorted([n for n in MANIFEST if not n['draft']], key=lambda n: updated_time(n['updatedAt']), reverse=True)
     # Validate and render before replacing output, so a bad note preserves the last preview.

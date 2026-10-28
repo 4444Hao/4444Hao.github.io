@@ -20,7 +20,7 @@ Obsidian 编辑博客/content 中的笔记 → 保存 → Source Control 检查�
 - 新增：在 content 的第一层创建英文文件名，例如 walk-in-wind.md。文件名只用小写字母、数字、连字符；它决定网址，标题可以是中文。
 - 删除：删除 content 中的 Markdown，检查 Source Control 的删除项，然后提交并推送。下次成功构建会删除对应网页，重新计算文章、字数、分类分页和标签图谱。Git 历史仍保留曾提交的内容。
 - 暂不展示：设置 draft: true；要展示时改为 draft: false。草稿源码在公开仓库中仍可读，私人笔记应放在博客仓库之外。
-- RSS：新文章首次公开时另加 `published: 'YYYY-MM-DD HH:mm'`，之后不要修改它；日常修订只改 updated。订阅地址是 https://4444hao.github.io/feed.xml，草稿不会进入订阅源。没有 published 的旧文作为无日期存档保留。
+- RSS：公开笔记按 `updated` 倒序自动进入最近 20 条订阅源，无需另填 `published`。修订内容时更新 `updated`；同一篇文章保持原链接，阅读器对修订是否再次提醒由阅读器决定。订阅地址是 https://4444hao.github.io/feed.xml，草稿不会进入订阅源。
 - 文件名：已有文章不要改文件名或 slug，以免更改网址。如文件已包含 slug，它必须与文件名（不含 .md）一致。
 - 分类：仅支持 随笔、短记、摘录、专题整理。tags 是列表，新标签会自动加入图谱，无需修改脚本。
 - 内容格式：当前只处理 content/*.md；暂不支持 content 下的子文件夹。Obsidian 双链 [[...]] 和 ![[图片]] 需改成标准 Markdown。
@@ -31,7 +31,7 @@ Obsidian 编辑博客/content 中的笔记 → 保存 → Source Control 检查�
 2. 模板设置的 Template folder location 选择 博客/templates（若将博客单独打开成库，则选 templates）。
 3. 在 博客/content 新建笔记，如 walk-in-wind；按 Ctrl+P，选择 Templates: Insert template，插入 new-post。
 4. 将标题、摘要、分类、标签改好。模板插入时自动填写当前日期和时分；以后修改内容时手动更新 updated。
-5. draft 默认 true；确定要在网页展示时填好 published，再改为 false，提交并推送。
+5. draft 默认 true；确定要在网页和 RSS 中展示时，检查 `updated` 后改为 false，提交并推送。
 
 也可复制一篇现有文章到 content，改文件名、slug（若有）、标题、摘要、标签和日期。复制模板文件时，需把 updated 中的日期和时间占位符替换成实际 YYYY-MM-DD HH:mm 时间。
 

@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import date
 from email.utils import parsedate_to_datetime
 from collections import Counter
 from html.parser import HTMLParser
@@ -71,7 +72,7 @@ class BuildTests(unittest.TestCase):
         self.assertNotIn('```mermaid',source)
         self.assertNotIn('mermaid-figure',page)
         self.assertFalse((self.root/'docs/assets/diagrams').exists())
-    def test_rss_publication_dates_and_stable_archive(self):
+    def test_rss_tracks_updated_public_notes(self):
         feed=self.root/'docs/feed.xml'
         channel=ET.parse(feed).getroot().find('channel')
         self.assertEqual(channel.findtext('title'),'走心旁白')
@@ -82,6 +83,7 @@ class BuildTests(unittest.TestCase):
         for item in original:
             self.assertEqual(item.findtext('guid'),item.findtext('link'))
             self.assertTrue(item.findtext('description'))
+            self.assertTrue(item.findtext('pubDate'))
             self.assertTrue((self.root/'docs'/urlsplit(item.findtext('link')).path.lstrip('/')/'index.html').exists())
         home=(self.root/'docs/index.html').read_text(encoding='utf-8')
         self.assertIn('rel="alternate" type="application/rss+xml"',home)
@@ -90,7 +92,7 @@ class BuildTests(unittest.TestCase):
         file=self.root/'content/test-rss-note.md'
         data={'title':'风 & 树','category':'短记','tags':['自然 & 风'],
               'summary':'一段 <安静> 的记录。','updated':'2099-01-01 12:00',
-              'published':'2099-01-01 12:00','draft':False}
+              'draft':False}
         def write():file.write_text('---\n'+yaml.safe_dump(data,allow_unicode=True,sort_keys=False)+'---\n\n新的正文。\n',encoding='utf-8')
         try:
             write();self.build()
@@ -101,13 +103,19 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(item.findtext('category'),'短记')
             self.assertEqual(item.findall('category')[1].text,'自然 & 风')
             self.assertEqual(parsedate_to_datetime(item.findtext('pubDate')).isoformat(),'2099-01-01T12:00:00+08:00')
-            stable_feed=feed.read_bytes()
+            stable_guid=item.findtext('guid')
+            data['published']=date(2000,1,1);write();self.build()
+            item=ET.parse(feed).getroot().find('channel/item')
+            self.assertEqual(item.findtext('guid'),stable_guid)
+            self.assertEqual(parsedate_to_datetime(item.findtext('pubDate')).isoformat(),'2099-01-01T12:00:00+08:00')
             data['updated']='2099-01-03 08:00';write();self.build()
-            self.assertEqual(feed.read_bytes(),stable_feed)
+            item=ET.parse(feed).getroot().find('channel/item')
+            self.assertEqual(item.findtext('guid'),stable_guid)
+            self.assertEqual(parsedate_to_datetime(item.findtext('pubDate')).isoformat(),'2099-01-03T08:00:00+08:00')
             data['draft']=True;write();self.build()
             self.assertNotIn('test-rss-note',feed.read_text(encoding='utf-8'))
             snapshot=self.hash_output()
-            data['draft']=False;data['published']='not-a-date';write()
+            data['draft']=False;data['updated']='not-a-date';write()
             with self.assertRaises(subprocess.CalledProcessError):self.build()
             self.assertEqual(snapshot,self.hash_output())
         finally:

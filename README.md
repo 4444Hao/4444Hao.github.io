@@ -14,5 +14,5 @@ Obsidian 编辑 content 中的 Markdown
 
 RSS 订阅地址：https://4444hao.github.io/feed.xml
 
-新文章首次公开时，在 Markdown 开头属性中添加 `published: 'YYYY-MM-DD HH:mm'`；以后只更新 `updated`，不要改 `published`。草稿不进入 RSS；没有发布日期的旧文作为无日期存档。订阅源随网站自动构建，不需要单独同步。
+公开笔记（`draft: false`）会按已有的 `updated` 时间自动进入最近 20 条 RSS；新建时无需填写 `published`。修订笔记时更新 `updated`，网站和订阅源会一起重新构建；文章链接保持不变，阅读器是否再次提醒旧文章由阅读器决定。草稿不进入 RSS。
 

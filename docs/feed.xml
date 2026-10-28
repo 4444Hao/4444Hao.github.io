@@ -6,10 +6,22 @@
     <description>我的文字与记录。</description>
     <language>zh-CN</language>
     <item>
+      <title>记忆、叙事与记录</title>
+      <link>https://4444hao.github.io/essays/memory-and-narrative/</link>
+      <guid>https://4444hao.github.io/essays/memory-and-narrative/</guid>
+      <description>关于记忆重构、叙事偏差，以及为什么要留下当时的记录。</description>
+      <pubDate>Tue, 20 Oct 2026 20:38:00 +0800</pubDate>
+      <category>专题整理</category>
+      <category>记忆</category>
+      <category>阅读</category>
+      <category>行动</category>
+    </item>
+    <item>
       <title>光阴无声，草木作证</title>
       <link>https://4444hao.github.io/essays/trees-and-time/</link>
       <guid>https://4444hao.github.io/essays/trees-and-time/</guid>
       <description>屋前的一棵杨树，留下十年光阴的痕迹。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>自然</category>
       <category>回忆</category>
@@ -20,6 +32,7 @@
       <link>https://4444hao.github.io/essays/afternoon-playlist/</link>
       <guid>https://4444hao.github.io/essays/afternoon-playlist/</guid>
       <description>熟悉的音乐，把大学的午后带回了高中。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>回忆</category>
       <category>情绪</category>
@@ -30,6 +43,7 @@
       <link>https://4444hao.github.io/essays/a-rhythm-of-my-own/</link>
       <guid>https://4444hao.github.io/essays/a-rhythm-of-my-own/</guid>
       <description>在相似的生活中，确认自己的成长节奏。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>独处</category>
       <category>日常</category>
@@ -39,6 +53,7 @@
       <link>https://4444hao.github.io/essays/listening-to-the-wind/</link>
       <guid>https://4444hao.github.io/essays/listening-to-the-wind/</guid>
       <description>让风吹过，也让脑海留出一片空白。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>自然</category>
       <category>独处</category>
@@ -48,6 +63,7 @@
       <link>https://4444hao.github.io/essays/choosing-a-book/</link>
       <guid>https://4444hao.github.io/essays/choosing-a-book/</guid>
       <description>时间在挑选中过去，读下去也需要决心。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>阅读</category>
       <category>学习</category>
@@ -58,6 +74,7 @@
       <link>https://4444hao.github.io/essays/feelings-on-paper/</link>
       <guid>https://4444hao.github.io/essays/feelings-on-paper/</guid>
       <description>收藏写画的痕迹，也收藏当时的感受。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>情绪</category>
       <category>回忆</category>
@@ -67,6 +84,7 @@
       <link>https://4444hao.github.io/essays/elders-in-the-village/</link>
       <guid>https://4444hao.github.io/essays/elders-in-the-village/</guid>
       <description>常在同一处坐着的老人，和某一天留下的空位。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>日常</category>
       <category>意义</category>
@@ -76,6 +94,7 @@
       <link>https://4444hao.github.io/essays/quiet-in-solitude/</link>
       <guid>https://4444hao.github.io/essays/quiet-in-solitude/</guid>
       <description>一个人的时候，心里是轻松与平静。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>独处</category>
       <category>情绪</category>
@@ -85,6 +104,7 @@
       <link>https://4444hao.github.io/essays/walking/</link>
       <guid>https://4444hao.github.io/essays/walking/</guid>
       <description>没有目的地行走，感受世界的真实与距离。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>自然</category>
       <category>独处</category>
@@ -95,6 +115,7 @@
       <link>https://4444hao.github.io/essays/running-and-awareness/</link>
       <guid>https://4444hao.github.io/essays/running-and-awareness/</guid>
       <description>在疲惫中，感受到意识与身体的联系。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>行动</category>
       <category>日常</category>
@@ -104,6 +125,7 @@
       <link>https://4444hao.github.io/essays/a-campus-dream/</link>
       <guid>https://4444hao.github.io/essays/a-campus-dream/</guid>
       <description>校园、同学，还有一个漂浮在天空中的巨物。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>日常</category>
       <category>回忆</category>
@@ -113,6 +135,7 @@
       <link>https://4444hao.github.io/essays/the-haze-of-memory/</link>
       <guid>https://4444hao.github.io/essays/the-haze-of-memory/</guid>
       <description>过去预料不到现在，怀念也带着朦胧。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>回忆</category>
       <category>情绪</category>
@@ -122,6 +145,7 @@
       <link>https://4444hao.github.io/essays/looking-back/</link>
       <guid>https://4444hao.github.io/essays/looking-back/</guid>
       <description>往前走时茫然，回头看时却豁然开朗。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>选择</category>
       <category>回忆</category>
@@ -131,6 +155,7 @@
       <link>https://4444hao.github.io/essays/inner-contradictions/</link>
       <guid>https://4444hao.github.io/essays/inner-contradictions/</guid>
       <description>回忆、人际与自我之间，尚未理顺的思绪。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>情绪</category>
       <category>关系</category>
@@ -141,6 +166,7 @@
       <link>https://4444hao.github.io/essays/questions-about-meaning/</link>
       <guid>https://4444hao.github.io/essays/questions-about-meaning/</guid>
       <description>面对时间与动力，写下对生活的追问。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>意义</category>
       <category>情绪</category>
@@ -151,6 +177,7 @@
       <link>https://4444hao.github.io/essays/ideals-and-the-world/</link>
       <guid>https://4444hao.github.io/essays/ideals-and-the-world/</guid>
       <description>接受世界的瑕疵，也保留接近美好的动力。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>选择</category>
       <category>意义</category>
@@ -161,6 +188,7 @@
       <link>https://4444hao.github.io/essays/the-habit-of-noticing/</link>
       <guid>https://4444hao.github.io/essays/the-habit-of-noticing/</guid>
       <description>记录眼所见、心所想。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>日常</category>
       <category>行动</category>
@@ -170,6 +198,7 @@
       <link>https://4444hao.github.io/essays/one-small-step/</link>
       <guid>https://4444hao.github.io/essays/one-small-step/</guid>
       <description>持续的一小步。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>短记</category>
       <category>行动</category>
     </item>
@@ -178,19 +207,11 @@
       <link>https://4444hao.github.io/essays/reading-aloud-at-school/</link>
       <guid>https://4444hao.github.io/essays/reading-aloud-at-school/</guid>
       <description>小时候读课文的困难，留下了挫败的记忆。</description>
+      <pubDate>Sat, 03 Oct 2026 00:00:00 +0800</pubDate>
       <category>随笔</category>
       <category>回忆</category>
       <category>学习</category>
       <category>情绪</category>
-    </item>
-    <item>
-      <title>网友账号与智能体</title>
-      <link>https://4444hao.github.io/essays/people-and-perspectives/</link>
-      <guid>https://4444hao.github.io/essays/people-and-perspectives/</guid>
-      <description>通过背景与问题，听见另一个人的看法。</description>
-      <category>短记</category>
-      <category>关系</category>
-      <category>学习</category>
     </item>
   </channel>
 </rss>
