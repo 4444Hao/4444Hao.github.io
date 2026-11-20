@@ -25,7 +25,7 @@
 │   └── tasks.json                   VS Code 构建和本地预览任务（端口 8001）
 ├── assets/                          网站资源源码
 │   ├── style.css                    字体、基础配色、正文、表格和文章排版
-│   ├── graph.css                    白页外框、导航、首页左栏、图谱和分页样式
+│   ├── graph.css                    白页外框、浅灰绿顶栏、共用左栏、图谱和分页样式
 │   ├── graph.js                     图谱排布、拖动、连线高亮和视图切换
 │   ├── filter.js                    标签筛选、笔记列表和分页交互
 │   ├── favicon.svg                  页眉标志和浏览器标签页图标
@@ -73,9 +73,9 @@
 | 文章标题、摘要、分类、标签、日期和正文 | `content/对应笔记.md`。开头两道 `---` 之间是属性。修订时更新 `updated`。 |
 | 草稿与新笔记模板 | 草稿写在 `drafts/`，模板改 [templates/new-post.md](templates/new-post.md)。 |
 | 站名「走心旁白」、首页大标题「我的文字与记录」、分类标题下的小字 | [site.json](site.json) 的 `title`、`description`、`sectionDescriptions`。 |
-| 「关于这里」「你好。」、关于页介绍、页脚短句或顶部导航 | [build.py](build.py)。关于页搜索 `about=`；导航、站名链接和页脚在 `page()`。 |
+| 「关于这里」「你好。」、关于页介绍、页脚短句或栏目导航 | [build.py](build.py)。关于页搜索 `about=`；共用左栏、手机顶部导航、站名链接和页脚在 `page()`。 |
 | 首页标题下的介绍、统计栏文字、「最近笔记」标题 | [build.py](build.py)，分别找 `intro-line`、`site-stats` 和 `recent_listing()`。篇数、字数、更新时间由构建计算。 |
-| 页面宽度、白页和灰边、B 方案左栏、图谱配色与手机断点 | [assets/graph.css](assets/graph.css)。首页双栏找 `.home-layout`，外框找 `.notebook-shell`。 |
+| 页面宽度、顶栏颜色、桌面左栏、图谱配色与手机断点 | [assets/graph.css](assets/graph.css)。外框找 `.notebook-shell`，顶栏找 `.site-chrome`，共用左栏找 `.site-sidebar`。 |
 | 字体、正文颜色与行距、引用、表格、代码块 | [assets/style.css](assets/style.css)。基础字体和颜色找 `:root`，正文找 `.prose`；`graph.css` 后加载，可能覆盖部分规则。 |
 | 页眉标志、浏览器标签页图标、首页插画 | 改根目录 `assets/` 下的 [favicon.svg](assets/favicon.svg) 或 [wind-in-trees.webp](assets/wind-in-trees.webp)。如改文件名，同步修改 `build.py` 中的引用。 |
 | 图谱排布、拖动手感、标签点击后的筛选 | 排布与拖动看 [graph.js](assets/graph.js)，筛选与分页看 [filter.js](assets/filter.js)。新增标签只需改笔记的 `tags`。 |

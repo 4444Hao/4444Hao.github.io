@@ -216,12 +216,26 @@ def write(path: str, content: str) -> None:
     destination.write_text(content, encoding="utf-8", newline="\n")
 
 
-def page(title: str, body: str, *, current: str, path: str, description: str = "", article: bool = False, toolbar: str = "") -> str:
+def page(title: str, body: str, *, current: str, path: str, topics: str, intro: str = "",
+         description: str = "", article: bool = False, toolbar: str = "") -> str:
     full_title = SITE["title"] if not title else f'{title} · {SITE["title"]}'
     nav = []
     for key, label, href in (("home", "主页", "/"), ("随笔", "随笔", "/essays/"), ("短记", "短记", "/notes/"), ("摘录", "摘录", "/excerpts/"), ("专题整理", "专题整理", "/collections/")):
-        state = ' aria-current="page"' if key == current else ""
+        state = (' aria-current="location"' if article else ' aria-current="page"') if key == current else ""
         nav.append(f'<a href="{href}"{state}>{label}</a>')
+    navigation = f'<nav aria-label="主要导航">{"".join(nav)}</nav>'
+    explorer = topics if intro else (
+        f'<details class="sidebar-explorer"><summary>展开标签图谱</summary>{topics}</details>'
+    )
+    sidebar = f'''<aside class="site-sidebar" aria-label="浏览博客">
+    {explorer}
+    <div class="sidebar-links"><p>栏目</p>{navigation}<p class="sidebar-secondary"><a href="/about/">关于本站</a> · <a href="/feed.xml" type="application/rss+xml">RSS</a></p></div>
+    </aside>'''
+    if intro:
+        layout = f'<main id="main" tabindex="-1" class="wrap home-layout site-layout">{intro}{sidebar}{body}</main>'
+    else:
+        main_class = ' class="reading-main"' if article else ""
+        layout = f'<div class="wrap site-layout interior-layout">{sidebar}<main id="main" tabindex="-1"{main_class}>{body}</main></div>'
     desc = description or SITE["description"]
     return f'''<!doctype html>
 <html lang="zh-CN">
@@ -232,7 +246,7 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
   <meta name="description" content="{esc(desc)}">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <meta name="theme-color" content="#f4f0e6">
+  <meta name="theme-color" content="#e5ece3">
   <link rel="canonical" href="{esc(ORIGIN + path)}">
   <link rel="alternate" type="application/rss+xml" title="{esc(SITE['title'])} RSS" href="/feed.xml">
   <meta property="og:title" content="{esc(full_title)}">
@@ -250,9 +264,9 @@ def page(title: str, body: str, *, current: str, path: str, description: str = "
   <div class="notebook-shell">
   <div class="site-chrome"><header class="site-header wrap">
     <a class="brand" href="/about/" aria-label="关于{esc(SITE['title'])}"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
-    <nav aria-label="主要导航">{''.join(nav)}</nav>
+    {navigation}
   </header>{toolbar}</div>
-  <main id="main" class="wrap {'reading-main' if article else ''}">{body}</main>
+  {layout}
   <footer class="site-footer wrap"><span>走心地旁白</span><nav aria-label="页脚导航"><a href="/about/">关于</a><a href="/feed.xml" type="application/rss+xml">RSS</a><a href="{esc(SITE['github'])}">GitHub</a></nav></footer>
   </div>
 </body>
@@ -415,22 +429,21 @@ def build() -> None:
         label_y = -4 - 8*(len(chunks)-1)
         node_markup.append(f'<g class="graph-node" data-tag="{esc(tag)}" data-count="{counts[tag]}" data-radius="{radius:.2f}" data-node="{i}" role="button" tabindex="0" aria-pressed="false" aria-label="{esc(tag)}，{counts[tag]} 篇文章"><title>{esc(tag)} · {counts[tag]} 篇</title><circle class="node-disc" r="{radius:.2f}"/><text class="node-label" y="{label_y}">{label}</text><text class="node-count" y="{12+8*(len(chunks)-1)}">{counts[tag]} 篇</text></g>')
     lines = ''.join(f'<line data-source="{ids[a]}" data-target="{ids[b]}" data-weight="{weight}" stroke-width="{min(2.2,.45+math.sqrt(weight)*.24):.2f}"/>' for (a,b),weight in sorted(cooccurrence.items()))
-    tag_list = ''.join(f'<a class="tag-list-link" data-tag="{esc(tag)}" href="/all/?tag={quote(tag,safe="")}#records" role="button" aria-pressed="false">{esc(tag)}<span>{counts[tag]}</span></a>' for tag in tag_names)
+    tag_list = ''.join(f'<a class="tag-list-link" data-tag="{esc(tag)}" href="/all/?tag={quote(tag,safe="")}#records">{esc(tag)}<span>{counts[tag]}</span></a>' for tag in tag_names)
     toolbar='<div class="nav-filters" id="home-filter-status" hidden><div class="filter-status"><span id="filter-description"></span><button type="button" id="remove-tag" aria-label="移除选中的标签" hidden>×</button><span id="result-count"></span><button type="button" id="clear-filters">清除筛选</button></div></div>'
     illustration = '<figure class="landscape"><img src="/assets/wind-in-trees.webp" width="2125" height="740" alt="风中的绿树与安静的草地" decoding="async"></figure>' if (ROOT/'assets/wind-in-trees.webp').exists() else ''
-    body=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['description'].rstrip('。'))}</h1><p class="intro-line">关于经历和想法，也有读到的文字。</p><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated_label(updated))}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></div>{illustration}</section>
-    <section class="topics" aria-labelledby="topics-title"><div class="section-heading"><div><p class="eyebrow">沿着联系，读下去</p><h2 id="topics-title">文章标签</h2></div><div class="graph-controls" hidden><button type="button" id="view-graph" aria-pressed="true">图谱</button><button type="button" id="view-list" aria-pressed="false">标签列表</button></div></div><p class="graph-hint">圆越大，相关记录越多；连线表示标签在同篇笔记中出现。点击标签查看文章。</p>
+    intro=f"""<section class="intro" aria-labelledby="home-title"><div class="intro-copy"><p class="eyebrow">眼所见 · 心所想</p><h1 id="home-title">{esc(SITE['description'].rstrip('。'))}</h1><p class="intro-line">关于经历和想法，也有读到的文字。</p><div class="intro-data"><dl class="site-stats"><div><dt>文章</dt><dd>{len(notes)} <small>篇</small></dd></div><div><dt>正文总字数</dt><dd>{total:,} <small>字</small></dd></div><div><dt>最近内容更新</dt><dd><time datetime="{esc(updated)}">{esc(updated_label(updated))}</time></dd></div></dl><p class="count-note">字数包含摘录；标签随公开笔记生长。</p></div></div>{illustration}</section>"""
+    topics=f"""<section class="topics" aria-labelledby="topics-title"><div class="section-heading"><div><p class="eyebrow">沿着联系，读下去</p><h2 id="topics-title">文章标签</h2></div><div class="graph-controls" hidden><button type="button" id="view-graph" aria-pressed="true">图谱</button><button type="button" id="view-list" aria-pressed="false">标签列表</button></div></div><p class="graph-hint">圆越大，相关笔记越多。连线表示两个标签曾出现在同一篇笔记里。</p>
     <div id="graph-panel" hidden><svg id="tag-graph" viewBox="0 0 980 420" role="group" aria-label="标签关系图谱" aria-describedby="graph-help"><desc id="graph-help">标签的大小按公开文章篇数计算，连线按标签共同出现的文章篇数计算。使用 Tab 选择标签，Enter 或空格查看相关文章；也可切换标签列表。</desc><g class="graph-edges">{lines}</g><g class="graph-nodes">{''.join(node_markup)}</g></svg></div>
-    <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">最近笔记显示 6 篇；点击查看全部浏览完整列表。标签筛选需要启用 JavaScript。</p></noscript></section>
+    <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">标签筛选需要启用 JavaScript。</p></noscript></section>
     """
     listing_paths=['/']
-    home_body = f'<div class="home-layout">{body.rstrip()}\n{recent_listing(notes)}</div>'
-    write('index.html', page('',home_body,current='home',path='/'))
+    write('index.html', page('',recent_listing(notes),current='home',path='/',topics=topics,intro=intro))
     for page_number in range(1,max(1,math.ceil(len(notes)/PAGE_SIZE))+1):
         path=listing_path(ALL_BASE,page_number); listing_paths.append(path)
         all_body=listing(notes,page_number=page_number,base=ALL_BASE,kind='all')
         title='全部笔记' if page_number==1 else f'全部笔记 · 第 {page_number} 页'
-        write(path.lstrip('/')+'index.html',page(title,all_body,current='home',path=path,toolbar=toolbar))
+        write(path.lstrip('/')+'index.html',page(title,all_body,current='home',path=path,topics=topics,toolbar=toolbar))
         if page_number > 1:
             # Keep previously shared list-page addresses useful without changing article URLs.
             target=path+'#records'
@@ -443,7 +456,7 @@ def build() -> None:
             path=listing_path(base,page_number);listing_paths.append(path)
             body=listing(section_notes,page_number=page_number,title=category,base=base)
             title=category if page_number==1 else f'{category} · 第 {page_number} 页'
-            write(path.lstrip('/')+'index.html',page(title,body,current=category,path=path))
+            write(path.lstrip('/')+'index.html',page(title,body,current=category,path=path,topics=topics))
     for i,n in enumerate(notes):
         stamp = note_time(n)
         neighbors = []
@@ -459,12 +472,12 @@ def build() -> None:
             toc = f'<aside class="article-toc"><p>文章目录</p><nav aria-label="文章目录">{toc_links}</nav></aside>'
         section_path=SECTIONS.get(n['category'], '/'); section_label=n['category'] if n['category'] in SECTIONS else '主页'
         category_href=SECTIONS.get(n['category'], '/?category='+quote(n['category'])+'#records')
-        body=f"""<div class="reading-layout{' with-toc' if toc else ''}"><article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header><div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(updated_label(n['updatedAt']))}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>{toc}</div>"""
-        write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',description=n['excerpt'],article=True))
+        body=f"""<article class="essay"><header class="article-heading"><a class="back-link" href="{section_path}#records">返回{section_label}</a><div class="article-meta"><a href="{category_href}">{esc(n['category'])}</a>{stamp}</div><h1>{esc(n['title'])}</h1>{tag_links(n)}<p class="source-note"><strong>{esc(n['provenance'])}</strong> · {esc(n['sourceNote'])}</p></header>{toc}<div class="prose">{rendered[n['slug']]}</div><p class="maintenance-date">内容整理更新：{esc(updated_label(n['updatedAt']))}</p><nav class="essay-neighbors" aria-label="相邻记录">{''.join(neighbors)}</nav></article>"""
+        write(f'essays/{n["slug"]}/index.html', page(n['title'],body,current=n['category'] if n['category'] in SECTIONS else 'home',path=f'/essays/{n["slug"]}/',topics=topics,description=n['excerpt'],article=True))
     about='<article class="about essay"><header class="page-heading"><p class="eyebrow">关于这里</p><h1>你好。</h1></header><div class="prose"><p>这是一个搭建中的个人博客。</p><p>使用 Obsidian + Git 插件维护内容，GitHub Pages 静态托管，GitHub Actions 自动构建与部署。</p></div></article>'
-    write('about/index.html',page('关于',about,current='about',path='/about/'))
+    write('about/index.html',page('关于',about,current='about',path='/about/',topics=topics))
     write('feed.xml', rss_feed())
-    write('404.html',page('没有找到这页','<section class="page-heading"><h1>这页暂时不在这里。</h1><p><a href="/">回到首页</a></p></section>',current='',path='/404.html'))
+    write('404.html',page('没有找到这页','<section class="page-heading"><h1>这页暂时不在这里。</h1><p><a href="/">回到首页</a></p></section>',current='',path='/404.html',topics=topics))
     paths=listing_paths+['/about/']+[f'/essays/{n["slug"]}/' for n in notes]
     write('sitemap.xml','<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join(f'<url><loc>{esc(ORIGIN+path)}</loc></url>' for path in paths)+'</urlset>\n')
     write('robots.txt',f'User-agent: *\nAllow: /\nSitemap: {ORIGIN}/sitemap.xml\n')

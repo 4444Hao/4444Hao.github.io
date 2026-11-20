@@ -85,10 +85,10 @@
     if(!frame && !paused && !panel.hidden && !document.hidden && active) frame=requestAnimationFrame(run);
   }
   function resize() {
-    if(panel.hidden) return;
+    if(panel.hidden || !svg.clientWidth) return;
     const oldWidth=width,oldHeight=height,wasWide=layoutWide,wasSidebar=layoutSidebar;
     const sidebarHeight=Number.parseFloat(getComputedStyle(svg).getPropertyValue('--sidebar-graph-height'));
-    width=Math.max(260,svg.clientWidth);
+    width=svg.clientWidth;
     layoutSidebar=sidebarHeight>0;
     layoutWide=width>=760;
     const layoutChanged=layoutWide!==wasWide || layoutSidebar!==wasSidebar;
@@ -98,7 +98,7 @@
     if(svg.style.height!==`${height}px`) svg.style.height=`${height}px`;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
     const area=nodes.reduce((sum,n)=>sum+Math.PI*n.baseRadius**2,0);
-    const scale=layoutWide ? .58 : Math.min(1,Math.sqrt(width*height/(Math.max(1,area)*2.4)));
+    const scale=layoutWide ? .58 : Math.min(layoutSidebar ? .62 : 1,Math.sqrt(width*height/(Math.max(1,area)*2.4)));
     // On a wide page, the three most-used topics form loose centers. Other
     // topics sit near the center with which they share the most notes.
     const major=nodes.slice(0,Math.min(3,nodes.length));
@@ -125,7 +125,9 @@
       });
     });
     nodes.forEach((n,i)=>{
-      n.radius=layoutWide?Math.max(n.baseRadius*scale,10+Math.min(4,n.el.dataset.tag.length)*6):n.baseRadius*scale;
+      const scaledRadius=n.baseRadius*scale;
+      n.radius=layoutSidebar?Math.max(13+Math.min(4,n.el.dataset.tag.length)*4,Math.min(33,scaledRadius)):
+        layoutWide?Math.max(scaledRadius,10+Math.min(4,n.el.dataset.tag.length)*6):scaledRadius;
       n.el.querySelector('circle').setAttribute('r',n.radius);
       if(layoutWide && (!n.x || layoutChanged)) {
         n.x=n.anchorX;n.y=n.anchorY;
@@ -157,7 +159,7 @@
     }
     for(const e of edges) e.el.classList.toggle('is-active',e.source===center || e.target===center);
   }
-  document.getElementById('records').addEventListener('tag-filter-change', e=>{selected=e.detail.tag;highlight();});
+  document.getElementById('records')?.addEventListener('tag-filter-change', e=>{selected=e.detail.tag;highlight();});
   function point(e) {
     const r=svg.getBoundingClientRect();
     return {x:(e.clientX-r.left)*width/r.width,y:(e.clientY-r.top)*height/r.height};

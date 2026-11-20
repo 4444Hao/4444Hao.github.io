@@ -134,10 +134,10 @@ class BuildTests(unittest.TestCase):
                 self.assertEqual(len(parsed.entries),len(subset[(number-1)*10:number*10]))
                 self.assertLessEqual(len(parsed.entries),10)
                 if category:
-                    self.assertNotIn('tag-graph',parsed.ids)
                     self.assertNotIn('home-title',parsed.ids)
                     self.assertTrue(all(e['data-category']==category for e in parsed.entries))
-                else:self.assertNotIn('tag-graph',parsed.ids)
+                self.assertIn('tag-graph',parsed.ids)
+                self.assertIn('<details class="sidebar-explorer">',markup)
                 seen.extend(e['data-category'] for e in parsed.entries)
             self.assertEqual(len(seen),len(subset))
         home=(self.root/'docs/index.html').read_text(encoding='utf-8')
@@ -148,7 +148,13 @@ class BuildTests(unittest.TestCase):
         self.assertIn('/all/#records',parsed.links)
         self.assertNotIn('pagination',parsed.ids)
         self.assertIn('tag-graph',parsed.ids)
+        self.assertNotIn('class="sidebar-explorer"',home)
         self.assertIn('关于',home)
+        article=(self.root/'docs/essays'/visible[0]['slug']/'index.html').read_text(encoding='utf-8')
+        self.assertEqual(article.count('id="tag-graph"'),1)
+        self.assertIn('<details class="sidebar-explorer">',article)
+        article_section=next(path for path,category in bases.items() if category==visible[0]['category'])
+        self.assertIn(f'href="{article_section}" aria-current="location"',article)
     def test_recent_update_moves_old_note_and_displays_dates(self):
         file=self.root/'content/test-recent-update.md'
         data={'title':'修订旧笔记','category':'短记','tags':['测试更新'],'summary':'时间排序测试','updated':'2000-01-01','date':'1999-01-01','draft':False}

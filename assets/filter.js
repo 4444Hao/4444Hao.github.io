@@ -2,36 +2,38 @@
 (() => {
   'use strict';
   const records=document.getElementById('records');
-  // Homepage graph opens the complete list; its recent section stays at six entries.
-  if(records && records.dataset.kind==='recent') {
+  const kind=records?.dataset.kind;
+  if(kind==='recent') {
     const params=new URLSearchParams(location.search);
     if(params.has('tag') || params.has('category') || params.has('page')) {
       location.replace('/all/'+location.search+'#records');
       return;
     }
-    document.querySelectorAll('[data-tag]').forEach(el=>{
+  }
+  if(kind!=='all') {
+    document.querySelectorAll('.site-sidebar [data-tag]').forEach(el=>{
+      const isNode=el.matches('.graph-node');
       el.addEventListener('click',e=>{
         if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;
         if(el.dataset.dragged==='true'){e.preventDefault();el.dataset.dragged='false';return;}
-        e.preventDefault();
-        location.assign('/all/?'+new URLSearchParams({tag:el.dataset.tag})+'#records');
+        if(isNode)location.assign('/all/?'+new URLSearchParams({tag:el.dataset.tag})+'#records');
       });
-      if(el.tagName.toLowerCase()==='g')el.addEventListener('keydown',e=>{
+      if(isNode)el.addEventListener('keydown',e=>{
         if(e.key==='Enter' || e.key===' '){e.preventDefault();el.dataset.dragged='false';el.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
       });
     });
-    return;
   }
   const catalog=document.getElementById('article-catalog');
   if(!records || !catalog) return;
-  const home=records.dataset.kind==='all';
+  const home=kind==='all';
   const base=records.dataset.base;
   const size=Number(records.dataset.pageSize);
   const entries=[...catalog.content.querySelectorAll('.essay-entry')];
   const metadata=entries.map(el=>({el,category:el.dataset.category,tags:JSON.parse(el.dataset.tags)}));
   const knownTags=new Set(metadata.flatMap(n=>n.tags));
   const knownCategories=new Set(metadata.map(n=>n.category));
-  const tagButtons=[...document.querySelectorAll('[data-tag]')];
+  const tagButtons=home?[...document.querySelectorAll('.site-sidebar [data-tag]')]:[];
+  tagButtons.filter(el=>el.matches('a')).forEach(el=>el.setAttribute('role','button'));
   const list=records.querySelector('.essay-list');
   const pager=document.getElementById('pagination');
   const heading=document.getElementById('records-title');
