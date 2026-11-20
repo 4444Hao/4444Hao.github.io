@@ -148,11 +148,13 @@ class BuildTests(unittest.TestCase):
         self.assertIn('/all/#records',parsed.links)
         self.assertNotIn('pagination',parsed.ids)
         self.assertIn('tag-graph',parsed.ids)
+        self.assertLess(home.index('class="sidebar-links"'),home.index('id="tag-graph"'))
         self.assertNotIn('class="sidebar-explorer"',home)
         self.assertIn('关于',home)
         article=(self.root/'docs/essays'/visible[0]['slug']/'index.html').read_text(encoding='utf-8')
         self.assertEqual(article.count('id="tag-graph"'),1)
         self.assertIn('<details class="sidebar-explorer">',article)
+        self.assertLess(article.index('class="sidebar-links"'),article.index('class="sidebar-explorer"'))
         article_section=next(path for path,category in bases.items() if category==visible[0]['category'])
         self.assertIn(f'href="{article_section}" aria-current="location"',article)
     def test_recent_update_moves_old_note_and_displays_dates(self):

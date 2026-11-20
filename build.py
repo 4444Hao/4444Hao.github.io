@@ -228,8 +228,9 @@ def page(title: str, body: str, *, current: str, path: str, topics: str, intro: 
         f'<details class="sidebar-explorer"><summary>展开标签图谱</summary>{topics}</details>'
     )
     sidebar = f'''<aside class="site-sidebar" aria-label="浏览博客">
+    <div class="sidebar-links"><h2>栏目</h2>{navigation}</div>
     {explorer}
-    <div class="sidebar-links"><p>栏目</p>{navigation}<p class="sidebar-secondary"><a href="/about/">关于本站</a> · <a href="/feed.xml" type="application/rss+xml">RSS</a></p></div>
+    <p class="sidebar-secondary"><a href="/about/">关于本站</a> · <a href="/feed.xml" type="application/rss+xml">RSS</a></p>
     </aside>'''
     if intro:
         layout = f'<main id="main" tabindex="-1" class="wrap home-layout site-layout">{intro}{sidebar}{body}</main>'
