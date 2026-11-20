@@ -29,6 +29,7 @@
 │   ├── graph.js                     图谱排布、拖动、连线高亮和视图切换
 │   ├── filter.js                    标签筛选、笔记列表和分页交互
 │   ├── favicon.svg                  页眉标志和浏览器标签页图标
+│   ├── header-grass.svg             宽屏顶栏的风吹草木剪影
 │   ├── wind-in-trees.webp           首页树木插图
 │   └── paper-grain.svg              原版纸纹资源；当前白页外框不使用这层纸纹
 ├── content/
@@ -77,7 +78,7 @@
 | 首页标题下的介绍、统计栏文字、「最近笔记」标题 | [build.py](build.py)，分别找 `intro-line`、`site-stats` 和 `recent_listing()`。篇数、字数、更新时间由构建计算。 |
 | 页面宽度、顶栏颜色、桌面左栏、图谱配色与手机断点 | [assets/graph.css](assets/graph.css)。外框找 `.notebook-shell`，顶栏找 `.site-chrome`，左栏和栏目网格找 `.site-sidebar`、`.sidebar-links nav`。 |
 | 字体、正文颜色与行距、引用、表格、代码块 | [assets/style.css](assets/style.css)。基础字体和颜色找 `:root`，正文找 `.prose`；`graph.css` 后加载，可能覆盖部分规则。 |
-| 页眉标志、浏览器标签页图标、首页插画 | 改根目录 `assets/` 下的 [favicon.svg](assets/favicon.svg) 或 [wind-in-trees.webp](assets/wind-in-trees.webp)。如改文件名，同步修改 `build.py` 中的引用。 |
+| 页眉标志、顶栏草木、首页插画 | 分别改 [favicon.svg](assets/favicon.svg)、[header-grass.svg](assets/header-grass.svg)、[wind-in-trees.webp](assets/wind-in-trees.webp)。顶栏的 RSS 链接在 `build.py` 的 `page()`。 |
 | 图谱排布、拖动手感、标签点击后的筛选 | 排布与拖动看 [graph.js](assets/graph.js)，筛选与分页看 [filter.js](assets/filter.js)。新增标签只需改笔记的 `tags`。 |
 | 首页几篇、列表每页几篇、RSS 保留多少条 | [build.py](build.py) 中的 `RECENT_SIZE`、`PAGE_SIZE`、`RSS_SIZE`，当前分别为 6、10、20。 |
 | 本地预览命令、部署触发条件 | 分别看 [.vscode/tasks.json](.vscode/tasks.json) 和 [.github/workflows/pages.yml](.github/workflows/pages.yml)。 |
@@ -86,8 +87,8 @@
 
 ## 页面怎么布局
 
-- **宽屏（1101 px 起）：** 浅灰绿顶栏显示站名。左栏从上到下是双列栏目、文章标签、关于本站与 RSS。首页默认展开图谱，右侧显示按 `updated` 倒序排列的最近 6 篇公开笔记。文章页左栏会随滚动吸顶，图谱默认收起。
-- **手机和窄窗口：** 栏目留在顶部；首页依次显示介绍、图谱、最近笔记，内页不显示侧栏。
+- **宽屏（1101 px 起）：** 浅灰绿顶栏铺一层淡草木剪影，左侧是站名，右侧是「RSS 订阅」。左栏从上到下是双列栏目、文章标签和关于本站。首页默认展开图谱，右侧显示按 `updated` 倒序排列的最近 6 篇公开笔记。文章页左栏会随滚动吸顶，图谱默认收起。
+- **手机和窄窗口：** 顶栏使用浅灰绿纯色，保留栏目导航和 RSS 入口。首页依次显示介绍、图谱、最近笔记，内页不显示侧栏。
 
 ## 写作、预览与发布
 

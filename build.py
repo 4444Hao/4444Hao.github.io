@@ -230,7 +230,7 @@ def page(title: str, body: str, *, current: str, path: str, topics: str, intro: 
     sidebar = f'''<aside class="site-sidebar" aria-label="浏览博客">
     <div class="sidebar-links"><h2>栏目</h2>{navigation}</div>
     {explorer}
-    <p class="sidebar-secondary"><a href="/about/">关于本站</a> · <a href="/feed.xml" type="application/rss+xml">RSS</a></p>
+    <p class="sidebar-secondary"><a href="/about/">关于本站</a></p>
     </aside>'''
     if intro:
         layout = f'<main id="main" tabindex="-1" class="wrap home-layout site-layout">{intro}{sidebar}{body}</main>'
@@ -265,6 +265,7 @@ def page(title: str, body: str, *, current: str, path: str, topics: str, intro: 
   <div class="notebook-shell">
   <div class="site-chrome"><header class="site-header wrap">
     <a class="brand" href="/about/" aria-label="关于{esc(SITE['title'])}"><img class="brand-mark" src="/assets/favicon.svg?v=wind-voice" width="32" height="32" alt="" aria-hidden="true"><span>{esc(SITE['title'])}</span></a>
+    <a class="header-rss" href="/feed.xml" type="application/rss+xml" aria-label="RSS 订阅"><svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" focusable="false"><circle cx="3" cy="13" r="1.2" fill="currentColor"/><path d="M2 8a6 6 0 0 1 6 6M2 3a11 11 0 0 1 11 11" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg>RSS<span class="rss-label"> 订阅</span></a>
     {navigation}
   </header>{toolbar}</div>
   {layout}
