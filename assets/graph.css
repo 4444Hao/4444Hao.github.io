@@ -146,29 +146,24 @@ html { scroll-padding-top: 110px; }
 .recent-records .more-notes { white-space: nowrap; padding-top: .2rem; }
 @media (max-width: 400px) { .recent-records .section-heading { gap: .6rem; } .recent-records .more-notes { font-size: .8rem; } }
 
-/* The site reads as one warm paper sheet against a muted green desk. */
-body { background: #7d877a; }
+body { background: #edeef0; }
 .notebook-shell {
   display: flex;
   flex-direction: column;
-  width: min(calc(100% - 3rem), 1440px);
+  width: min(calc(100% - 3rem), 1320px);
   min-height: calc(100vh - 3rem);
   margin: 1.5rem auto;
-  background: var(--paper) url('/assets/paper-grain.svg') repeat;
-  border: 1px solid #e0d9c9;
-  border-radius: 3px;
-  box-shadow: 0 24px 60px #252e263b, 0 3px 10px #252e261b;
+  background: #fff;
+  border: 1px solid #d5d8d6;
 }
 .notebook-shell > main { flex: 1; }
 .notebook-shell .site-chrome {
   width: 100%;
   margin: 0;
   top: 0;
-  background: var(--paper) url('/assets/paper-grain.svg') repeat;
+  background: #fff;
   border: 0;
-  border-bottom: 0;
-  border-radius: 2px 2px 0 0;
-  box-shadow: none;
+  border-bottom: 1px solid #dfe2de;
 }
 .notebook-shell .site-header nav a[aria-current] {
   color: var(--ink);
@@ -199,13 +194,76 @@ body { background: #7d877a; }
   .recent-records .entry-excerpt { margin: .3rem 0 .55rem; }
   .recent-records .note-time { justify-content: flex-start; text-align: left; margin-top: .5rem; }
 }
+@media screen and (min-width: 1101px) {
+  .home-layout {
+    display: grid;
+    grid-template-columns: 310px minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "topics intro" "topics records";
+    column-gap: clamp(1.75rem, 3vw, 3rem);
+  }
+  .home-layout .intro { grid-area: intro; display: block; padding: 2rem 0 1.25rem; }
+  .home-layout .intro h1 { white-space: normal; }
+  .home-layout .landscape { height: clamp(112px, 11vw, 160px); margin-top: 1rem; }
+  .home-layout .topics {
+    grid-area: topics;
+    background: #f5f7f4;
+    margin: 0;
+    padding: 1.75rem .875rem 1rem;
+    border: 0;
+    border-inline-end: 1px solid #dfe2de;
+  }
+  .home-layout .topics .section-heading { display: block; }
+  .home-layout .graph-controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: .7rem 0 .4rem;
+    border: 1px solid #d4ddd1;
+    border-radius: 4px;
+  }
+  .home-layout .graph-controls button { border: 0; border-radius: 3px; }
+  .home-layout .graph-controls button[aria-pressed="true"] { background: #dfe8dc; }
+  .home-layout #tag-graph { --sidebar-graph-height: 440px; height: var(--sidebar-graph-height); }
+  .home-layout .node-label { font-size: 13px; transform: translateY(8px); }
+  .home-layout .node-count { display: none; }
+  .home-layout .tag-list { display: grid; gap: 0; padding: .5rem 0 0; }
+  .home-layout .tag-list-link {
+    justify-content: space-between;
+    padding: .45rem .5rem;
+    border: 0;
+    border-bottom: 1px solid #dfe2de;
+    border-radius: 0;
+    background: none;
+  }
+  .home-layout .tag-list-link:hover { background: #e9efe6; }
+  .home-layout .tag-list-link span { flex-shrink: 0; }
+  .home-layout .tag-list-link span::after { content: ' 篇'; }
+  .home-layout .recent-records { grid-area: records; align-self: start; margin-top: 1.3rem; }
+  .home-layout .recent-records .essay-entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "title date" "excerpt excerpt" "tags tags";
+    gap: .3rem 1rem;
+  }
+  .home-layout .entry-top { grid-area: title; }
+  .home-layout .entry-excerpt { grid-area: excerpt; }
+  .home-layout .entry-tags { grid-area: tags; }
+  .home-layout .note-time { grid-area: date; }
+}
+@media screen and (min-width: 1280px) {
+  .home-layout .recent-records .essay-entry {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.45fr) auto;
+    grid-template-areas: "title excerpt date" "tags excerpt date";
+    align-items: start;
+  }
+  .home-layout .entry-excerpt, .home-layout .note-time { padding-top: .15rem; }
+}
 @media (max-width: 640px) {
   .notebook-shell {
     width: calc(100% - .5rem);
     min-height: calc(100vh - .5rem);
     margin: .25rem auto;
     border-radius: 2px;
-    box-shadow: 0 4px 18px #252e2626;
   }
   .notebook-shell .site-chrome { border-radius: 1px 1px 0 0; }
   .notebook-shell .wrap { width: calc(100% - 2rem); }

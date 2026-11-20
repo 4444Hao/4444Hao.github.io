@@ -15,7 +15,7 @@
   const edges = [...svg.querySelectorAll('.graph-edges line')].map(el => ({
     el, source:nodes[Number(el.dataset.source)], target:nodes[Number(el.dataset.target)], weight:Number(el.dataset.weight)
   }));
-  let width=980, height=420, frame=0, ticks=0, paused=preference.matches, layoutWide=false;
+  let width=980, height=420, frame=0, ticks=0, paused=preference.matches, layoutWide=false, layoutSidebar=false;
   let selected=new URLSearchParams(location.search).get('tag') || '', hovered='', dragging=null;
   let active=true;
   document.querySelector('.graph-controls').hidden=false;
@@ -34,7 +34,7 @@
   function physics() {
     for(const n of nodes) {
       if(n.dragging) continue;
-      if(layoutWide) {
+      if(layoutWide || n.placed) {
         const anchorStrength=n.placed ? .06 : .012;
         n.vx+=(n.anchorX-n.x)*anchorStrength; n.vy+=(n.anchorY-n.y)*anchorStrength;
       } else {
@@ -86,12 +86,15 @@
   }
   function resize() {
     if(panel.hidden) return;
-    const oldWidth=width,oldHeight=height,wasWide=layoutWide;
+    const oldWidth=width,oldHeight=height,wasWide=layoutWide,wasSidebar=layoutSidebar;
+    const sidebarHeight=Number.parseFloat(getComputedStyle(svg).getPropertyValue('--sidebar-graph-height'));
     width=Math.max(260,svg.clientWidth);
+    layoutSidebar=sidebarHeight>0;
     layoutWide=width>=760;
+    const layoutChanged=layoutWide!==wasWide || layoutSidebar!==wasSidebar;
     svg.classList.toggle('is-wide',layoutWide);
     svg.closest('.topics').classList.toggle('wide-graph',layoutWide);
-    height=layoutWide?Math.min(380,180+Math.max(0,nodes.length-14)*10):(width<480?430:400);
+    height=layoutSidebar?sidebarHeight:layoutWide?Math.min(380,180+Math.max(0,nodes.length-14)*10):(width<480?430:400);
     if(svg.style.height!==`${height}px`) svg.style.height=`${height}px`;
     svg.setAttribute('viewBox',`0 0 ${width} ${height}`);
     const area=nodes.reduce((sum,n)=>sum+Math.PI*n.baseRadius**2,0);
@@ -124,17 +127,17 @@
     nodes.forEach((n,i)=>{
       n.radius=layoutWide?Math.max(n.baseRadius*scale,10+Math.min(4,n.el.dataset.tag.length)*6):n.baseRadius*scale;
       n.el.querySelector('circle').setAttribute('r',n.radius);
-      if(layoutWide && (!n.x || !wasWide)) {
+      if(layoutWide && (!n.x || layoutChanged)) {
         n.x=n.anchorX;n.y=n.anchorY;
-      } else if(!n.x || (wasWide && !layoutWide)) {
+      } else if(!n.x || layoutChanged) {
         const angle=i*2.399963229728653;
         const ring=Math.sqrt((i+.5)/Math.max(1,nodes.length));
         n.x=width/2+Math.cos(angle)*ring*(width/2-n.radius-30);
         n.y=height/2+Math.sin(angle)*ring*(height/2-n.radius-30);
       } else {n.x*=width/oldWidth;n.y*=height/oldHeight;}
       n.vx=n.vy=0;constrain(n);
-      if(n.placed && layoutWide && wasWide){n.anchorX=n.x;n.anchorY=n.y;}
-      if(!layoutWide || !wasWide) n.placed=false;
+      if(layoutChanged) n.placed=false;
+      if(n.placed){n.anchorX=n.x;n.anchorY=n.y;}
     });
     // Prepare a collision-free arrangement before any visible animation starts.
     for(let i=0;i<120;i++) physics();
@@ -184,7 +187,7 @@
       if(!dragging || dragging.node!==n) return;
       // Keep a deliberately moved desktop topic near its release point.
       // Its linked topics settle briefly, while idle diagrams stay still.
-      if(dragging.moved && layoutWide){n.anchorX=n.x;n.anchorY=n.y;n.placed=true;}
+      if(dragging.moved && (layoutWide || layoutSidebar)){n.anchorX=n.x;n.anchorY=n.y;n.placed=true;}
       n.dragging=false;
       dragging=null;start(80);
     };

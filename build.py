@@ -424,7 +424,8 @@ def build() -> None:
     <div id="tag-list" class="tag-list" aria-label="主题标签">{tag_list or '<p>还没有公开标签。</p>'}</div><noscript><p class="count-note">最近笔记显示 6 篇；点击查看全部浏览完整列表。标签筛选需要启用 JavaScript。</p></noscript></section>
     """
     listing_paths=['/']
-    write('index.html', page('',body.rstrip()+"\n"+recent_listing(notes),current='home',path='/'))
+    home_body = f'<div class="home-layout">{body.rstrip()}\n{recent_listing(notes)}</div>'
+    write('index.html', page('',home_body,current='home',path='/'))
     for page_number in range(1,max(1,math.ceil(len(notes)/PAGE_SIZE))+1):
         path=listing_path(ALL_BASE,page_number); listing_paths.append(path)
         all_body=listing(notes,page_number=page_number,base=ALL_BASE,kind='all')

@@ -18,7 +18,7 @@ sourceNote: 个人记录。
 
 所有详情网址统一是 https://4444hao.github.io/essays/文件名去掉扩展名/，分类变化不改变这个网址。
 
-确认标题、摘要、正文、来源和日期后，将 draft 改为 false。Git 提交并推送后，等 Build and deploy blog 的 build 和 deploy 都成功，再刷新网页。
+先在 `drafts/` 写作。确认标题、摘要、正文、来源和日期后，将 `draft` 改为 `false`，再把笔记移入 `content/`。Git 提交并推送后，等 Build and deploy blog 的 build 和 deploy 都成功，再刷新网页。
 
 更新时间说明：所有列表按 updated 倒序。每篇显示写作日期（已知时）及必要的更新时间；写作日期未知则只显示更新于。首页显示最近 6 篇，完整列表位于 /all/。
 
