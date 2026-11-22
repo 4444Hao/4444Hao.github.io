@@ -38,7 +38,9 @@
   const pager=document.getElementById('pagination');
   const heading=document.getElementById('records-title');
   const originalTitle=heading.textContent;
-  const toolbar=document.getElementById('home-filter-status');
+  const filterStatus=document.getElementById('list-filter-status');
+  const filterDescription=document.getElementById('filter-description');
+  const intro=records.querySelector('.listing-intro');
   const clear=document.getElementById('clear-filters');
   const remove=document.getElementById('remove-tag');
   let tag='',category='',number=1;
@@ -91,12 +93,13 @@
     number=Math.min(pages,Math.max(1,number));
     list.replaceChildren(...matches.slice((number-1)*size,number*size).map(n=>n.el.cloneNode(true)));
     document.getElementById('list-summary').textContent=`按最近更新排列 · 共 ${total} 篇 · 第 ${number} / ${pages} 页`;
-    heading.textContent=home && (tag || category) ? '筛选后的笔记' : originalTitle;
+    const filtered=home && Boolean(tag || category);
+    heading.textContent=filtered ? '筛选后的笔记' : originalTitle;
     tagButtons.forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.tag===tag)));
-    if(toolbar) {
-      toolbar.hidden=!(tag || category);
-      document.getElementById('filter-description').textContent=[category,tag?`标签：${tag}`:''].filter(Boolean).join(' · ');
-      document.getElementById('result-count').textContent=`${total} 篇`;
+    if(filterStatus) {
+      filterStatus.hidden=!filtered;
+      if(intro)intro.hidden=filtered;
+      filterDescription.textContent=[category,tag?`标签：${tag}`:''].filter(Boolean).join(' · ');
       remove.hidden=!tag;
     }
     document.getElementById('empty-results').hidden=total!==0;
@@ -120,7 +123,7 @@
       if(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;
       e.preventDefault();
       if(el.dataset.dragged==='true'){el.dataset.dragged='false';return;}
-      tag=tag===el.dataset.tag?'':el.dataset.tag;number=1;render('push');
+      tag=tag===el.dataset.tag?'':el.dataset.tag;number=1;render('push',true);
     });
     el.addEventListener('keydown',e=>{
       if((el.tagName.toLowerCase()==='g' && e.key==='Enter') || e.key===' '){

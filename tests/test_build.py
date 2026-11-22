@@ -133,6 +133,9 @@ class BuildTests(unittest.TestCase):
                 parsed=Links();parsed.feed(markup)
                 self.assertEqual(len(parsed.entries),len(subset[(number-1)*10:number*10]))
                 self.assertLessEqual(len(parsed.entries),10)
+                if parsed.entries:
+                    self.assertIn('/"><h2>',markup)
+                    self.assertNotIn('/"><h3>',markup)
                 if category:
                     self.assertNotIn('home-title',parsed.ids)
                     self.assertTrue(all(e['data-category']==category for e in parsed.entries))
@@ -145,6 +148,7 @@ class BuildTests(unittest.TestCase):
         self.assertEqual([e['data-slug'] for e in parsed.entries],[n['slug'] for n in visible[:6]])
         self.assertEqual(len(parsed.entries),min(6,len(visible)))
         self.assertIn('最近笔记',home)
+        self.assertIn('/"><h3>',home)
         self.assertIn('/all/#records',parsed.links)
         self.assertNotIn('pagination',parsed.ids)
         self.assertIn('tag-graph',parsed.ids)
