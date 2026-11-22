@@ -48,6 +48,8 @@ button:disabled { cursor: default; }
 .prose table { border-collapse: collapse; font: .92rem/1.8 var(--sans); min-width: 100%; }
 .prose th, .prose td { border: 1px solid var(--line); padding: .65rem .8rem; min-width: 110px; text-align: left; }
 .prose th { background: #eae7db; }
+.prose .table-align-center { text-align: center; }
+.prose .table-align-right { text-align: right; }
 .prose hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
 .prose h4, .prose h5, .prose h6 { font-size: 1.15rem; margin-top: 1.8rem; }
 @media (max-width: 760px) {

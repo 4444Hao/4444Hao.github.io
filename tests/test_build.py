@@ -72,6 +72,47 @@ class BuildTests(unittest.TestCase):
         self.assertNotIn('```mermaid',source)
         self.assertNotIn('mermaid-figure',page)
         self.assertFalse((self.root/'docs/assets/diagrams').exists())
+    def test_existing_markdown_comparison_table_and_anchor(self):
+        page=(self.root/'docs/essays/note-3bb820cc2c7a/index.html').read_text(encoding='utf-8')
+        self.assertIn('id="一方法论的完整定义"',page)
+        self.assertIn('href="#一方法论的完整定义"',page)
+        self.assertRegex(page,r'<th scope="col"></th>\s*<th scope="col">延后学习</th>\s*<th scope="col">忽略不学</th>')
+        self.assertNotIn('|--|---------|---------|',page)
+    def test_markdown_keeps_notebook_rendering_rules(self):
+        from build import markdown
+
+        source = """# 中文标题
+
+第一行
+第二行带 ~~删除线~~。
+
+1. 外层
+   - 内层
+
+> 引用 **加粗**
+
+| 甲 | 乙 |
+| :- | -: |
+| A\\|B | 2 |
+
+~~~text
+| 不解析 | 表格 |
+| -- | -- |
+~~~
+
+<div>原始 HTML</div>
+"""
+        rendered=markdown(source)
+        self.assertIn('<h2 id="中文标题">中文标题</h2>',rendered)
+        self.assertIn('第一行<br>\n第二行带 <s>删除线</s>。',rendered)
+        self.assertRegex(rendered,r'<ol>\s*<li>外层\s*<ul>\s*<li>内层</li>')
+        self.assertIn('<blockquote>\n<p>引用 <strong>加粗</strong></p>',rendered)
+        self.assertEqual(rendered.count('<table>'),1)
+        self.assertIn('role="region" aria-label="文章表格" tabindex="0"',rendered)
+        self.assertIn('<td class="table-align-left">A|B</td>',rendered)
+        self.assertIn('<td class="table-align-right">2</td>',rendered)
+        self.assertIn('class="language-text">| 不解析 | 表格 |',rendered)
+        self.assertIn('&lt;div&gt;原始 HTML&lt;/div&gt;',rendered)
     def test_rss_tracks_updated_public_notes(self):
         feed=self.root/'docs/feed.xml'
         channel=ET.parse(feed).getroot().find('channel')

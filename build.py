@@ -9,8 +9,10 @@ from email.utils import format_datetime
 from itertools import combinations
 try:
     import yaml
-except ModuleNotFoundError:
-    raise SystemExit('缺少 PyYAML，请先运行：python -m pip install -r requirements.txt')
+    from markdown_it import MarkdownIt
+    from markdown_it.renderer import RendererHTML
+except ModuleNotFoundError as exc:
+    raise SystemExit(f'缺少构建依赖 {exc.name}，请先运行：python -m pip install -r requirements.txt') from exc
 from datetime import date, datetime, timedelta, timezone
 from html.parser import HTMLParser
 import html
@@ -71,143 +73,57 @@ def esc(value: str) -> str:
     return html.escape(str(value), quote=True)
 
 
-def safe_url(value: str, image: bool = False) -> str:
-    value = value.strip()
-    if any(ord(char) < 32 for char in value) or value.startswith("//"):
-        raise ValueError(f"Unsupported URL: {value!r}")
-    scheme = urlparse(value).scheme.lower()
+def check_markdown_url(value: str, *, image: bool = False) -> None:
     allowed = ("",) if image else ("", "https", "http", "mailto")
-    if scheme not in allowed:
-        raise ValueError(f"Unsupported URL scheme: {value!r}")
-    if value.lower().startswith("javascript:"):
-        raise ValueError("Unsafe URL")
-    return esc(value)
+    if value.startswith("//") or any(ord(char) < 32 for char in value) or urlparse(value).scheme.lower() not in allowed:
+        raise ValueError(f"Unsupported URL: {value!r}")
 
 
-def inline(text: str) -> str:
-    """Small safe Markdown subset; HTML stays escaped, no scripts or embeds."""
-    tokens: list[str] = []
+class BlogMarkdownRenderer(RendererHTML):
+    def table_open(self, tokens, idx, options, env):
+        return ('<div class="table-scroll" role="region" aria-label="文章表格" tabindex="0">\n'
+                + self.renderToken(tokens, idx, options, env))
 
-    def stash(markup: str) -> str:
-        tokens.append(markup)
-        return f"\x00{len(tokens) - 1}\x00"
+    def table_close(self, tokens, idx, options, env):
+        return self.renderToken(tokens, idx, options, env) + '</div>\n'
 
-    text = re.sub(r"`([^`]+)`", lambda m: stash(f"<code>{esc(m[1])}</code>"), text)
-    text = re.sub(
-        r"!\[([^\]]*)\]\(([^\s)]+)\)",
-        lambda m: stash(f'<img src="{safe_url(m[2], image=True)}" alt="{esc(m[1])}" loading="lazy" decoding="async">'),
-        text,
-    )
-    text = re.sub(
-        r"(?<!!)\[([^\]]+)\]\(([^\s)]+)\)",
-        lambda m: stash(f'<a href="{safe_url(m[2])}">{esc(m[1])}</a>'),
-        text,
-    )
-    text = esc(text)
-    text = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", text)
-    text = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", text)
-    for index, markup in enumerate(tokens):
-        text = text.replace(f"\x00{index}\x00", markup)
-    return text
+    def image(self, tokens, idx, options, env):
+        token = tokens[idx]
+        check_markdown_url(token.attrGet('src'), image=True)
+        token.attrSet('loading', 'lazy')
+        token.attrSet('decoding', 'async')
+        return super().image(tokens, idx, options, env)
+
+    def link_open(self, tokens, idx, options, env):
+        check_markdown_url(tokens[idx].attrGet('href'))
+        return self.renderToken(tokens, idx, options, env)
+
+
+MARKDOWN = MarkdownIt(
+    'commonmark', {'html': False, 'breaks': True, 'xhtmlOut': False}, renderer_cls=BlogMarkdownRenderer
+).enable(['table', 'strikethrough'])
 
 
 def markdown(text: str) -> str:
-    """Paragraphs, hard line breaks, headings, lists, quotes and fenced code."""
-    blocks: list[str] = []
-    paragraph: list[str] = []
-    list_items: list[str] = []
-    list_kind: str | None = None
-    code: list[str] | None = None
-    quotes: list[str] = []
-
-    def flush() -> None:
-        nonlocal list_kind
-        if paragraph:
-            blocks.append("<p>" + "<br>\n".join(inline(line) for line in paragraph) + "</p>")
-            paragraph.clear()
-        if list_items:
-            blocks.append(f"<{list_kind}>" + "".join(f"<li>{inline(item)}</li>" for item in list_items) + f"</{list_kind}>")
-            list_items.clear()
-            list_kind = None
-        if quotes:
-            blocks.append("<blockquote><p>" + "<br>".join(inline(line) for line in quotes) + "</p></blockquote>")
-            quotes.clear()
-
-    # Parse pipe tables before ordinary block processing; raw HTML remains escaped.
-    lines = text.splitlines()
-    prepared = []
-    tables = []
-    pos = 0
-    fenced = False
-    def cells(line):
-        return re.split(r"(?<!\\)\|", line.strip().strip("|"))
-    while pos < len(lines):
-        if lines[pos].strip().startswith("```"):
-            fenced = not fenced
-        if not fenced and pos + 1 < len(lines) and "|" in lines[pos] and all(
-            re.fullmatch(r"\s*:?-{3,}:?\s*", cell) for cell in cells(lines[pos+1])):
-            header = cells(lines[pos]); rows = []; pos += 2
-            while pos < len(lines) and "|" in lines[pos] and lines[pos].strip():
-                rows.append(cells(lines[pos])); pos += 1
-            tables.append('<div class="table-scroll" role="region" aria-label="文章表格" tabindex="0"><table><thead><tr>' +
-                ''.join('<th scope="col">'+inline(cell.strip())+'</th>' for cell in header) + '</tr></thead><tbody>' +
-                ''.join('<tr>'+''.join('<td>'+inline(cell.strip())+'</td>' for cell in row)+'</tr>' for row in rows) +
-                '</tbody></table></div>')
-            prepared.append(f"\x01{len(tables)-1}\x01")
-            continue
-        prepared.append(lines[pos]); pos += 1
-    heading_ids = {}
-    for raw in prepared:
-        line = raw.strip()
-        if line.startswith("```"):
-            if code is None:
-                flush()
-                code = []
-            else:
-                blocks.append("<pre><code>" + esc("\n".join(code)) + "</code></pre>")
-                code = None
-            continue
-        if code is not None:
-            code.append(raw)
-            continue
-        if line.startswith("\x01"):
-            flush()
-            blocks.append(tables[int(line.strip("\x01"))])
-            continue
-        if re.fullmatch(r"([-*_])(?:\s*\1){2,}", line):
-            flush()
-            blocks.append("<hr>")
-            continue
-        if not line:
-            flush()
-            continue
-        heading = re.match(r"^(#{1,6})\s+(.+)$", line)
-        item = re.match(r"^([-*+]\s+|\d+\.\s+)(.+)$", line)
-        if heading:
-            flush()
-            level = min(len(heading[1]) + 1, 6)
-            anchor = re.sub(r"[^\w\- ]", "", re.sub(r"[*`]", "", heading[2])).lower().replace(" ", "-")
-            count = heading_ids.get(anchor, 0); heading_ids[anchor] = count + 1
-            anchor = anchor + (f"-{count}" if count else "")
-            blocks.append(f'<h{level} id="{esc(anchor)}">{inline(heading[2])}</h{level}>')
-        elif line.startswith("> "):
-            if paragraph or list_items:
-                flush()
-            quotes.append(line[2:])
-        elif item:
-            kind = "ol" if item[1][0].isdigit() else "ul"
-            if paragraph or quotes or (list_kind is not None and list_kind != kind):
-                flush()
-            list_kind = kind
-            list_items.append(item[2])
-        else:
-            if list_items or quotes:
-                flush()
-            paragraph.append(line)
-    if code is not None:
-        raise ValueError("Unclosed Markdown code fence")
-    flush()
-    return "\n".join(blocks)
+    env = {}
+    tokens = MARKDOWN.parse(text, env)
+    heading_ids = Counter()
+    for index, token in enumerate(tokens):
+        if token.type == 'heading_open':
+            raw_heading = tokens[index + 1].content
+            anchor = re.sub(r"[^\w\- ]", "", re.sub(r"[*`]", "", raw_heading)).lower().replace(" ", "-")
+            count = heading_ids[anchor]
+            heading_ids[anchor] += 1
+            token.attrSet('id', f'{anchor}-{count}' if count else anchor)
+        if token.type in ('heading_open', 'heading_close'):
+            token.tag = f'h{min(int(token.tag[1]) + 1, 6)}'
+        if token.type in ('th_open', 'td_open'):
+            alignment = token.attrs.pop('style', None)
+            if alignment in ('text-align:left', 'text-align:center', 'text-align:right'):
+                token.attrSet('class', 'table-align-' + alignment.split(':')[1])
+            if token.type == 'th_open':
+                token.attrSet('scope', 'col')
+    return MARKDOWN.renderer.render(tokens, MARKDOWN.options, env)
 
 
 def write(path: str, content: str) -> None:
@@ -473,7 +389,7 @@ def build() -> None:
                 other=notes[i+offset]
                 neighbors.append(f'<a href="/essays/{other["slug"]}/"><span>{label}</span>{esc(other["title"])}</a>')
             else: neighbors.append('<span></span>')
-        headings = re.findall(r'<h([2-6]) id="([^"]+)">(.*?)</h\1>', rendered[n['slug']])
+        headings = re.findall(r'<h([2-6]) id="([^"]+)">(.*?)</h\1>', rendered[n['slug']], flags=re.S)
         toc = ''
         if len(headings) >= 4 and word_count(rendered[n['slug']]) >= 500:
             toc_links = ''.join(f'<a href="#{anchor}" class="toc-level-{level}">{esc(html.unescape(re.sub(r"<[^>]*>","",label)))}</a>' for level,anchor,label in headings)
