@@ -1,0 +1,89 @@
+name: Build and deploy Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CF_PROJECT_NAME: ipv64-test-4444hao
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Verify existing Cloudflare project and production branch
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from urllib.error import HTTPError, URLError
+          from urllib.parse import quote
+          from urllib.request import Request, urlopen
+
+          account_id = os.environ.get('CLOUDFLARE_ACCOUNT_ID', '').strip()
+          api_token = os.environ.get('CLOUDFLARE_API_TOKEN', '').strip()
+          project_name = os.environ['CF_PROJECT_NAME']
+          if not account_id or not api_token:
+              raise SystemExit('Add CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to repository Actions secrets.')
+
+          url = ('https://api.cloudflare.com/client/v4/accounts/'
+                 + quote(account_id, safe='') + '/pages/projects/' + quote(project_name, safe=''))
+          request = Request(url, headers={'Authorization': 'Bearer ' + api_token})
+          try:
+              with urlopen(request, timeout=30) as response:
+                  payload = json.load(response)
+          except HTTPError as error:
+              raise SystemExit(f'Cloudflare project lookup failed (HTTP {error.code}). Check the account ID and Pages Edit permission.') from None
+          except URLError:
+              raise SystemExit('Cloudflare project lookup failed. Retry the workflow after checking connectivity.') from None
+
+          project = payload.get('result') or {}
+          if not payload.get('success') or project.get('name') != project_name:
+              raise SystemExit('The existing Cloudflare Pages project could not be verified.')
+          branch = project.get('production_branch')
+          if not isinstance(branch, str) or not branch or any(ord(char) < 32 or ord(char) == 127 for char in branch):
+              raise SystemExit('The existing project has no valid production_branch.')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write('CF_PRODUCTION_BRANCH=' + branch + '\n')
+          print(f'Existing project verified. Production branch: {branch}')
+          PY
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Validate blog
+        run: python -m unittest discover -s tests -v
+      - name: Build for the Cloudflare custom domain
+        env:
+          BLOG_SITE_URL: https://4444hao.home64.de
+        run: python build.py
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Deploy to the existing Cloudflare Pages project
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4.136.3 pages deploy docs \
+            --project-name="$CF_PROJECT_NAME" \
+            --branch="$CF_PRODUCTION_BRANCH" \
+            --commit-hash="$GITHUB_SHA"

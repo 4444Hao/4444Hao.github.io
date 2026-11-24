@@ -17,6 +17,7 @@ from datetime import date, datetime, timedelta, timezone
 from html.parser import HTMLParser
 import html
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -59,9 +60,23 @@ def load_notes():
     return notes, content
 
 
+def site_origin(value: str) -> str:
+    parsed = urlparse(value)
+    if (parsed.scheme not in ('http', 'https') or not parsed.hostname
+            or parsed.username is not None or parsed.password is not None
+            or parsed.path not in ('', '/') or parsed.params or parsed.query or parsed.fragment
+            or '?' in value or '#' in value or '\\' in value
+            or any(char.isspace() for char in value)):
+        raise ValueError('Site URL must be an http(s) origin without credentials, path, query or fragment')
+    # Accessing the port also rejects malformed or out-of-range port numbers.
+    parsed.port
+    return f'{parsed.scheme}://{parsed.netloc}'
+
+
 MANIFEST, CONTENT = load_notes()
 CATEGORIES = SITE["categories"]
-ORIGIN = SITE["url"].rstrip("/")
+DEFAULT_ORIGIN = site_origin(SITE['url'])
+ORIGIN = site_origin(os.environ.get('BLOG_SITE_URL', DEFAULT_ORIGIN))
 PAGE_SIZE = 10
 RECENT_SIZE = 6
 RSS_SIZE = 20
@@ -215,8 +230,11 @@ def rss_feed() -> str:
         item = ET.SubElement(channel, 'item')
         permalink = f'{ORIGIN}/essays/{note["slug"]}/'
         for tag, value in (('title', note['title']), ('link', permalink),
-                           ('guid', permalink), ('description', note['excerpt'])):
+                           ('guid', f'{DEFAULT_ORIGIN}/essays/{note["slug"]}/'),
+                           ('description', note['excerpt'])):
             ET.SubElement(item, tag).text = value
+        if ORIGIN != DEFAULT_ORIGIN:
+            item.find('guid').set('isPermaLink', 'false')
         ET.SubElement(item, 'pubDate').text = format_datetime(updated_time(note['updatedAt']))
         for category in [note['category'], *note['tags']]:
             ET.SubElement(item, 'category').text = category

@@ -1,6 +1,7 @@
 """Build validation uses an isolated copy, so it never touches real notes."""
 import json
 import hashlib
+import os
 import shutil
 import subprocess
 import sys
@@ -41,8 +42,50 @@ class BuildTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):cls.temp.cleanup()
     @classmethod
-    def build(cls):
-        return subprocess.run([sys.executable,'build.py'],cwd=cls.root,capture_output=True,text=True,encoding='utf-8',check=True)
+    def build(cls, *, site_url=None):
+        env=os.environ.copy()
+        env.pop('BLOG_SITE_URL',None)
+        if site_url is not None:
+            env['BLOG_SITE_URL']=site_url
+        return subprocess.run([sys.executable,'build.py'],cwd=cls.root,env=env,capture_output=True,text=True,encoding='utf-8',check=True)
+    def test_build_site_url_and_stable_rss_identity(self):
+        docs=self.root/'docs'
+        original={p.relative_to(docs):p.read_bytes() for p in docs.rglob('*') if p.is_file()}
+        settings=(self.root/'site.json').read_bytes()
+        default_origin=json.loads(settings)['url'].rstrip('/')
+        mirror_origin='https://4444hao.home64.de'
+        default_feed=ET.fromstring(original[Path('feed.xml')]).find('channel')
+        try:
+            self.build(site_url=mirror_origin+'/')
+            mirrored={p.relative_to(docs):p.read_bytes() for p in docs.rglob('*') if p.is_file()}
+            self.assertEqual(original.keys(),mirrored.keys())
+            for path,body in original.items():
+                if path==Path('feed.xml'):
+                    continue
+                with self.subTest(path=str(path)):
+                    self.assertEqual(mirrored[path],body.replace(default_origin.encode(),mirror_origin.encode()))
+            mirror_feed=ET.fromstring(mirrored[Path('feed.xml')]).find('channel')
+            self.assertEqual(mirror_feed.findtext('link'),mirror_origin+'/')
+            self.assertEqual(len(default_feed.findall('item')),len(mirror_feed.findall('item')))
+            for old,new in zip(default_feed.findall('item'),mirror_feed.findall('item')):
+                self.assertEqual(new.findtext('link'),old.findtext('link').replace(default_origin,mirror_origin,1))
+                for field in ('guid','title','description','pubDate'):
+                    self.assertEqual(new.findtext(field),old.findtext(field))
+                self.assertEqual(new.find('guid').get('isPermaLink'),'false')
+            self.assertEqual((self.root/'site.json').read_bytes(),settings)
+        finally:
+            self.build()
+        self.assertEqual(self.hash_output(),{str(p):hashlib.sha256(body).hexdigest() for p,body in original.items()})
+    def test_invalid_site_url_preserves_output(self):
+        snapshot=self.hash_output()
+        for site_url in ('','ftp://example.com','//example.com','https://example.com/blog',
+                         'https://example.com/?q=1','https://example.com/#records',
+                         'https://user:password@example.com','https://example.com/ bad',
+                         'https://example.com:invalid'):
+            with self.subTest(site_url=site_url):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    self.build(site_url=site_url)
+                self.assertEqual(self.hash_output(),snapshot)
     def test_links_drafts_and_graph(self):
         notes=json.loads((self.root/'content/index.json').read_text(encoding='utf-8'))
         visible=[n for n in notes if not n['draft']]
