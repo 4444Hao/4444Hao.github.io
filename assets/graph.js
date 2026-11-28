@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const svg = document.getElementById('tag-graph');
-  if (!svg) return;
+  if (!svg || typeof ResizeObserver !== 'function' || typeof IntersectionObserver !== 'function') return;
   const panel = document.getElementById('graph-panel');
   const list = document.getElementById('tag-list');
   const graphButton = document.getElementById('view-graph');
@@ -18,8 +18,6 @@
   let width=980, height=420, frame=0, ticks=0, paused=preference.matches, layoutWide=false, layoutSidebar=false;
   let selected=new URLSearchParams(location.search).get('tag') || '', hovered='', dragging=null;
   let active=true;
-  document.querySelector('.graph-controls').hidden=false;
-
   function paint() {
     for(const n of nodes) n.el.setAttribute('transform',`translate(${n.x.toFixed(2)} ${n.y.toFixed(2)})`);
     for(const e of edges) {
@@ -170,7 +168,7 @@
     n.el.addEventListener('focus',()=>{hovered=n.el.dataset.tag;highlight();});
     n.el.addEventListener('blur',()=>{hovered='';highlight();});
     n.el.addEventListener('pointerdown',e=>{
-      if(e.button!==0) return;
+      if(e.button!==0 || typeof n.el.setPointerCapture !== 'function') return;
       const p=point(e);
       n.el.dataset.dragged='false';
       dragging={node:n,start:p,offset:{x:n.x-p.x,y:n.y-p.y},moved:false,id:e.pointerId};
@@ -205,9 +203,15 @@
   }
   graphButton.addEventListener('click',()=>mode(true));
   listButton.addEventListener('click',()=>mode(false));
-  preference.addEventListener('change',()=>{paused=preference.matches;if(paused)stop();else start();});
+  const updateMotionPreference=()=>{paused=preference.matches;if(paused)stop();else start();};
+  if (typeof preference.addEventListener === 'function') {
+    preference.addEventListener('change',updateMotionPreference);
+  } else if (typeof preference.addListener === 'function') {
+    preference.addListener(updateMotionPreference);
+  }
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else start(40);});
   new ResizeObserver(resize).observe(svg);
   new IntersectionObserver(entries=>{active=entries[0].isIntersecting;if(active)start(40);else stop();}).observe(panel);
   mode(true);highlight();
+  document.querySelector('.graph-controls').hidden=false;
 })();
